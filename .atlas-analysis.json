@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Coherence Atlas",
+  "projectType": "ai-ml",
+  "projectName": "Coherence Atlas",
+  "projectDescription": "A technical platform for examining how complex, evolving systems retain, lose, and reorganize structure over time — tracking persistence, drift, degradation, and transition across dynamic signal environments.",
   "theme": "luma",
-  "colors": {
-    "primary": "#ef7025",
-    "light": "#eec9bc",
-    "dark": "#4fa1ab"
-  },
-  "favicon": "/favicon.svg",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/CoherenceSystems/coherence-alpha"
-    }
-  },
+  "primaryColor": "#ef7025",
+  "lightColor": "#eec9bc",
+  "darkColor": "#4fa1ab",
   "navigation": {
     "tabs": [
       {
@@ -90,9 +78,26 @@
       }
     ]
   },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/CoherenceSystems/coherence-alpha"
-    }
-  }
+  "keyFeatures": [
+    "Knowledge graph for encoding relationships between signals, states, and system structure",
+    "Registered multi-view: observed motion, cross-scale structure, and state field aligned simultaneously",
+    "Persistence analysis — evaluate whether meaningful structure carries forward over time",
+    "Drift review — track gradual movement, divergence, and degradation in stated context",
+    "Transition detection — identify possible phase changes, regime shifts, and structural reorganization",
+    "Artifact records — auditable monitoring records for review and diligence",
+    "Cross-scale structural analysis at fine, mid, and broad scale dimensions",
+    "State field geometry tracking system state paths between basins",
+    "Structured review workflows with explicit claim boundaries and interpretation limits",
+    "Support for synthetic studies, benchmark design, and applied pilot evaluations"
+  ],
+  "publicApiSurface": [
+    "Signal ingestion and registration",
+    "Knowledge graph schema and query interface",
+    "Artifact record creation and retrieval",
+    "Structured review session management",
+    "Drift and persistence metrics endpoints",
+    "Transition window detection and export",
+    "State field coordinate tracking",
+    "Benchmark scenario configuration"
+  ]
 }

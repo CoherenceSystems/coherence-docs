@@ -1,0 +1,349 @@
+---
+title: "Querying the Coherence Atlas Knowledge Graph"
+sidebarTitle: "Querying"
+description: "Query the Coherence Atlas knowledge graph via REST API — traverse by signal, time range, scale level, or state basin using filters and pagination."
+---
+
+The Coherence Atlas knowledge graph is queryable directly through the REST API at `GET /graph`. Every node and edge registered during signal ingestion, state field definition, and review session creation is accessible through this endpoint. You can traverse by signal ID, filter by relationship type, scope queries to time windows, and navigate the state basin structure — all in a single request or across a paginated result set.
+
+## Base Endpoint
+
+```
+GET https://api.coherencesystems.net/v1/graph
+Authorization: Bearer <your-api-key>
+```
+
+All graph queries are authenticated with your Bearer token. Queries are scoped to your organization's registered signal environment — you cannot query graph entities belonging to other organizations.
+
+## Query Parameters
+
+Use these parameters to shape what the graph returns.
+
+<ParamField query="signal_id" type="string">
+  Return the subgraph anchored to this signal node. Includes all edges and connected nodes up to the depth specified by `depth`. Example: `sig_01abc`.
+</ParamField>
+
+<ParamField query="relationship" type="string">
+  Filter results to a specific edge type. Allowed values: `PRECEDES`, `CORRELATES_WITH`, `TRANSITIONS_TO`, `BELONGS_TO_BASIN`, `OBSERVED_AT_SCALE`. Omit to return all relationship types.
+</ParamField>
+
+<ParamField query="time_range" type="string">
+  ISO 8601 datetime range as a comma-separated pair: `start,end`. Restricts returned edges and events to those observed within the window. Example: `2025-01-15T00:00:00Z,2025-01-16T00:00:00Z`.
+</ParamField>
+
+<ParamField query="scale_level" type="string">
+  Restrict structural results to a specific scale. Allowed values: `fine`, `mid`, `broad`. When set, only `OBSERVED_AT_SCALE` and `CORRELATES_WITH` edges at this scale are returned.
+</ParamField>
+
+<ParamField query="basin_id" type="string">
+  Return all nodes and transitions associated with a specific state basin. Useful for isolating all activity within a known region of the state field.
+</ParamField>
+
+<ParamField query="drift_threshold" type="float">
+  Filter `CORRELATES_WITH` edges to those where structural correlation has degraded below this value (0–1). A value of `0.5` returns only edges where correlation coefficient has fallen below 0.5, surfacing active drift.
+</ParamField>
+
+<ParamField query="depth" type="integer" default="2">
+  Maximum traversal depth from the anchor node. Accepts values from `1` to `5`. Higher depths return larger subgraphs and consume more rate limit quota.
+</ParamField>
+
+<ParamField query="node_types" type="string">
+  Comma-separated list of node types to include in results. Example: `SignalNode,EventNode`. Omit to return all node types.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number for paginated results. Starts at `1`.
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="50">
+  Number of graph objects per page. Maximum: `200`.
+</ParamField>
+
+---
+
+## Query Patterns
+
+### Get All Nodes Connected to a Signal
+
+Retrieve the full immediate neighborhood of a signal node — all edges and connected nodes at depth 1.
+
+**Request:**
+
+```
+GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&depth=1
+Authorization: Bearer <your-api-key>
+```
+
+**Response:**
+
+```json
+{
+  "query": {
+    "signal_id": "sig_01abc",
+    "depth": 1
+  },
+  "results": {
+    "nodes": [
+      {
+        "type": "SignalNode",
+        "id": "sig_01abc",
+        "properties": {
+          "name": "reactor-temperature-array",
+          "domain": "engineered_systems",
+          "registered_at": "2025-01-15T09:00:00Z",
+          "scale_levels": ["fine", "mid", "broad"]
+        }
+      },
+      {
+        "type": "EventNode",
+        "id": "evt_007xz",
+        "properties": {
+          "signal_id": "sig_01abc",
+          "occurred_at": "2025-01-15T11:42:00Z",
+          "event_type": "threshold_crossing",
+          "magnitude": 0.87
+        }
+      },
+      {
+        "type": "ScaleNode",
+        "id": "scale_fine_01",
+        "properties": {
+          "level": "fine",
+          "signal_count": 3
+        }
+      }
+    ],
+    "edges": [
+      {
+        "type": "OBSERVED_AT_SCALE",
+        "source": "sig_01abc",
+        "target": "scale_fine_01",
+        "attributes": {
+          "scale_level": "fine",
+          "registered_at": "2025-01-15T09:00:00Z",
+          "weight": 0.8
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_nodes": 3,
+      "total_edges": 1,
+      "has_more": false
+    }
+  }
+}
+```
+
+---
+
+### Find Transitions in a Time Window
+
+Retrieve all `TRANSITIONS_TO` edges observed within a specific time window, to surface regime shifts during a period under review.
+
+**Request:**
+
+```
+GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&relationship=TRANSITIONS_TO&time_range=2025-01-15T00:00:00Z,2025-01-16T00:00:00Z
+Authorization: Bearer <your-api-key>
+```
+
+**Response:**
+
+```json
+{
+  "query": {
+    "signal_id": "sig_01abc",
+    "relationship": "TRANSITIONS_TO",
+    "time_range": {
+      "start": "2025-01-15T00:00:00Z",
+      "end": "2025-01-16T00:00:00Z"
+    }
+  },
+  "results": {
+    "nodes": [
+      {
+        "type": "StateNode",
+        "id": "state_nominal_02",
+        "properties": {
+          "label": "nominal-operating-range",
+          "basin_id": "basin_stable_A",
+          "stability_score": 0.93
+        }
+      },
+      {
+        "type": "StateNode",
+        "id": "state_elevated_threshold_01",
+        "properties": {
+          "label": "elevated-threshold-region",
+          "basin_id": "basin_transition_B",
+          "stability_score": 0.42
+        }
+      }
+    ],
+    "edges": [
+      {
+        "type": "TRANSITIONS_TO",
+        "source": "state_nominal_02",
+        "target": "state_elevated_threshold_01",
+        "attributes": {
+          "occurred_at": "2025-01-15T14:10:00Z",
+          "transition_type": "gradual",
+          "leading_signal_ids": ["sig_01abc", "sig_02def"],
+          "confidence": 0.78
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_nodes": 2,
+      "total_edges": 1,
+      "has_more": false
+    }
+  }
+}
+```
+
+---
+
+### Get Cross-Scale Structure at a Registered Progression Point
+
+Retrieve the cross-scale structural snapshot — all `CORRELATES_WITH` and `OBSERVED_AT_SCALE` edges — at a specific point along a registered monitoring progression.
+
+**Request:**
+
+```
+GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&relationship=CORRELATES_WITH&time_range=2025-01-15T11:00:00Z,2025-01-15T12:00:00Z&scale_level=mid
+Authorization: Bearer <your-api-key>
+```
+
+**Response:**
+
+```json
+{
+  "query": {
+    "signal_id": "sig_01abc",
+    "relationship": "CORRELATES_WITH",
+    "time_range": {
+      "start": "2025-01-15T11:00:00Z",
+      "end": "2025-01-15T12:00:00Z"
+    },
+    "scale_level": "mid"
+  },
+  "results": {
+    "nodes": [
+      {
+        "type": "SignalNode",
+        "id": "sig_01abc",
+        "properties": {
+          "name": "reactor-temperature-array",
+          "domain": "engineered_systems"
+        }
+      },
+      {
+        "type": "SignalNode",
+        "id": "sig_02def",
+        "properties": {
+          "name": "reactor-pressure-primary",
+          "domain": "engineered_systems"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "type": "CORRELATES_WITH",
+        "source": "sig_01abc",
+        "target": "sig_02def",
+        "attributes": {
+          "correlation_coefficient": 0.84,
+          "scale_level": "mid",
+          "window_id": "win_2025-01-15-1100"
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_nodes": 2,
+      "total_edges": 1,
+      "has_more": false
+    }
+  }
+}
+```
+
+---
+
+## Response Format
+
+Every `/graph` response follows a consistent envelope structure.
+
+<ResponseField name="query" type="object">
+  An echo of the query parameters received, for verification and audit purposes.
+</ResponseField>
+
+<ResponseField name="results" type="object">
+  The graph result set.
+
+  <Expandable title="results fields">
+    <ResponseField name="nodes" type="array[object]">
+      Array of node objects matching the query. Each node includes `type`, `id`, and a `properties` object.
+    </ResponseField>
+
+    <ResponseField name="edges" type="array[object]">
+      Array of edge objects matching the query. Each edge includes `type`, `source`, `target`, and an `attributes` object.
+    </ResponseField>
+
+    <ResponseField name="pagination" type="object">
+      Pagination metadata.
+
+      <Expandable title="pagination fields">
+        <ResponseField name="page" type="integer">
+          Current page number.
+        </ResponseField>
+        <ResponseField name="page_size" type="integer">
+          Number of objects per page.
+        </ResponseField>
+        <ResponseField name="total_nodes" type="integer">
+          Total node count for the query across all pages.
+        </ResponseField>
+        <ResponseField name="total_edges" type="integer">
+          Total edge count for the query across all pages.
+        </ResponseField>
+        <ResponseField name="has_more" type="boolean">
+          Whether additional pages exist. If `true`, increment `page` to retrieve the next set.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Rate Limits and Pagination
+
+Graph queries are subject to rate limits based on your plan tier. Depth-1 queries against a single signal count as 1 unit. Each additional depth level multiplies the cost:
+
+| Depth | Rate Limit Units Per Request |
+|---|---|
+| 1 | 1 |
+| 2 | 3 |
+| 3 | 9 |
+| 4 | 27 |
+| 5 | 81 |
+
+The default rate limit is **1,000 units per minute** for standard API access. The `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers on every response tell you your current quota status.
+
+When a query returns `has_more: true`, use the `page` parameter to retrieve subsequent pages. Each page request counts as a separate rate limit unit at the same depth cost.
+
+<Warning>
+  Queries at depth 4 or 5 against high-connectivity signal environments can return very large subgraphs. Use `node_types` and `relationship` filters to narrow results before increasing depth, to avoid exhausting your rate limit quota on a single exploration query.
+</Warning>
+
+---
+
+<Tip>
+  When running a Drift or Transition review, use the graph query as the structural foundation for your review session. Query for `CORRELATES_WITH` edges filtered by `drift_threshold` to surface where structural correlation has degraded, then anchor your `ReviewNode` to those specific signals and time windows. This keeps your review question tightly connected to the graph evidence rather than relying on summary statistics alone. See the [Drift](/capabilities/drift) and [Transition](/capabilities/transition) capability pages for step-by-step review workflows that use graph queries at each stage.
+</Tip>

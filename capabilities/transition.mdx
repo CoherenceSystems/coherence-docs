@@ -1,0 +1,195 @@
+---
+title: "Detect and Characterize Regime Shifts and Reorganization"
+sidebarTitle: "Transition"
+description: "Identify phase changes and structural reorganizations in your signal environment, align all three registered views, and build language for what the system moved through."
+---
+
+Some changes in a system are not just gradual movement — they are reorganizations. The system passes through a boundary, its structure narrows and reforms, and what emerges on the other side is not simply a continuation of what came before. Transition in Coherence Atlas is the capability for detecting, characterizing, and building review language around those moments. It is the point where drift analysis hands off to a deeper structural examination — and where the registered view of all three panels becomes most important.
+
+## What Transition Means
+
+A transition is a detected interval in a system's registered progression where structural reorganization occurs. It is not simply a large drift event. It is a qualitative shift: the system moves between state basins, cross-scale structure narrows before reforming in a new configuration, and the signal environment that existed before the transition is not the same one that exists after.
+
+Transitions are the subject of deeper review because they change the reference frame. A persistence or drift analysis conducted using a pre-transition baseline will not accurately describe a post-transition system — the context needs to be updated once a transition is confirmed.
+
+## Drift vs. Transition
+
+Understanding the boundary between these two concepts is essential for using Coherence Atlas accurately:
+
+<CardGroup cols={2}>
+  <Card title="Drift" icon="arrow-right">
+    Gradual movement within a regime. The system retains its fundamental structure — its organizational mode, its state basin, its cross-scale pattern — but its position within that structure is shifting over time. Drift is continuous and directional.
+  </Card>
+  <Card title="Transition" icon="arrows-rotate">
+    Reorganization between regimes. The system's structure itself changes — the state basin it occupies shifts to a new one, cross-scale patterns narrow and then reform differently, and the relationships between signals are reconfigured. Transitions have a detectable window with a beginning and an end.
+  </Card>
+</CardGroup>
+
+Drift can precede a transition — a system often shows increasing drift at multiple scale levels before reorganizing. But drift can also resolve without a transition. The distinction lies in whether the structural reorganization completes: if cross-scale patterns reform in a new configuration and the state path moves to a new basin, a transition has occurred.
+
+## The Transition Window
+
+Coherence Atlas detects transitions as intervals — the **transition window** — rather than as point events. The window spans from the earliest detected sign of structural narrowing to the point at which new structural patterns stabilize. The window contains three phases:
+
+<Steps>
+  <Step title="Pre-Transition Zone">
+    The period immediately before reorganization begins. Drift is typically elevated, cross-scale agreement is weakening, and the state path shows increasing excursion from its established basin. This zone is often visible in retrospect even when it was not alarming in real time.
+  </Step>
+  <Step title="Reorganization Interval">
+    The core of the transition window. Cross-scale structure narrows — fine, mid, and broad scale patterns lose alignment with each other. The state path exits its previous basin. This is the period of highest structural instability and lowest persistence scores.
+  </Step>
+  <Step title="Post-Transition Stabilization">
+    New structural patterns begin to appear and carry forward. The state path settles into a new basin. Persistence scores begin to recover. The post-transition period requires a new context session with an updated baseline before drift analysis will be meaningful.
+  </Step>
+</Steps>
+
+## State Basin Geometry During a Transition
+
+The state field in Coherence Atlas represents the geometry of system state: where the system's trajectory sits, how it moves, and which basins — stable organizational configurations — it occupies at different times. During a transition, this geometry changes in a characteristic way:
+
+- The state path moves away from the boundaries of its previous basin
+- Trajectory excursion increases — the path covers more of the state field than during stable operation
+- As reorganization completes, the path converges toward the boundaries of a new basin
+- The new basin may be narrower, broader, or differently oriented relative to the previous one
+
+The state field view in the registered display makes this geometry visible alongside the signal motion and structural pattern panels, so you can assess whether the path is genuinely reorganizing or simply showing elevated variability within a single basin.
+
+## Cross-Scale Structure During a Transition
+
+One of the most reliable indicators of a genuine transition — rather than measurement noise or a large drift event — is the behavior of cross-scale structure. During a transition:
+
+1. **Fine-scale patterns narrow first** — local signal relationships lose their established configuration
+2. **Mid-scale patterns follow** — coupling between signal groups weakens
+3. **Broad-scale patterns narrow last** — the system-level organizational mode becomes indeterminate
+4. **Patterns reform in sequence from broad back to fine** — the new organizational mode appears first at the broad scale and propagates downward as the transition completes
+
+This narrowing-and-reformation sequence is the structural signature of a genuine transition in the Coherence Atlas framework. If cross-scale patterns narrow but do not reform — or reform inconsistently — the transition may be incomplete, and the system may be in an indeterminate state requiring continued monitoring.
+
+## API Usage
+
+Retrieve transition analysis for a registered signal using `GET /signals/{id}/transitions`.
+
+### Parameters
+
+<ParamField query="time_range" type="string" required>
+  ISO 8601 interval string for the analysis window.
+</ParamField>
+
+<ParamField query="context_id" type="string" required>
+  The `context_id` from your active review session. Transition detection is referenced against the structural baseline declared in context.
+</ParamField>
+
+<ParamField query="min_window_duration" type="string">
+  Minimum transition window duration as an ISO 8601 duration, e.g. `PT6H`. Events shorter than this are suppressed. Use this to filter out brief instabilities that do not represent genuine regime shifts.
+</ParamField>
+
+### Example Request
+
+```bash
+GET https://api.coherencesystems.net/v1/signals/sig_therm_001/transitions
+  ?time_range=2024-09-01T00:00:00Z/2024-09-30T23:59:59Z
+  &context_id=ctx_7b91e44f
+  &min_window_duration=PT12H
+Authorization: Bearer <your_token>
+```
+
+### Example Response
+
+```json
+{
+  "signal_id": "sig_therm_001",
+  "context_id": "ctx_7b91e44f",
+  "transitions_detected": 1,
+  "transitions": [
+    {
+      "transition_id": "trns_4c2a8f91",
+      "window": {
+        "pre_transition_start": "2024-09-17T12:00:00Z",
+        "reorganization_start": "2024-09-21T00:00:00Z",
+        "reorganization_end": "2024-09-23T18:00:00Z",
+        "stabilization_end": "2024-09-25T06:00:00Z"
+      },
+      "basin_shift": {
+        "from_basin": "basin_thermal_nominal",
+        "to_basin": "basin_thermal_elevated",
+        "confidence": 0.84
+      },
+      "cross_scale_signature": {
+        "narrowing_detected": true,
+        "reformation_detected": true,
+        "reformation_complete": true,
+        "scale_sequence": ["fine", "mid", "broad", "broad", "mid", "fine"]
+      },
+      "persistence_at_transition": 0.28,
+      "drift_magnitude_at_onset": 0.61,
+      "review_flag": "recommend_artifact_record",
+      "graph_node_refs": [
+        "node_sig_therm_001_state_a",
+        "node_basin_thermal_elevated",
+        "node_transition_thermal_q3"
+      ]
+    }
+  ],
+  "evaluated_at": "2024-10-02T11:55:07Z"
+}
+```
+
+## The Registered View
+
+The registered view in Coherence Atlas aligns all three analytical panels simultaneously over the transition window:
+
+<CardGroup cols={3}>
+  <Card title="Observed Motion" icon="wave-square">
+    Signal movement through time — shows the raw trajectory of your signals through the transition window, including the elevated excursion during the reorganization interval.
+  </Card>
+  <Card title="Cross-Scale Structure" icon="layer-group">
+    Structural patterns at fine, mid, and broad scales — shows the narrowing sequence as patterns lose alignment and the reformation sequence as new patterns stabilize.
+  </Card>
+  <Card title="State Field" icon="circle-nodes">
+    State path geometry — shows the transition between basins, including the excursion phase and the convergence toward the new basin boundary.
+  </Card>
+</CardGroup>
+
+Reviewing all three panels together over the same transition window is the most reliable way to confirm that a genuine reorganization occurred rather than an extended drift episode or a measurement artifact. When all three panels show consistent signatures — elevated motion, pattern narrowing and reformation, and basin shift — you have a well-supported transition record.
+
+## When to Flag a Transition for Artifact Record Creation
+
+Not every detected transition requires an artifact record. Use these criteria to decide when to create one:
+
+<Accordion title="The transition_id appears with review_flag: recommend_artifact_record">
+  When the API response includes this flag, Coherence Atlas has assessed that the transition meets the criteria for a significant structural reorganization. Create an artifact record to preserve the finding with full context linkage.
+</Accordion>
+
+<Accordion title="The basin shift confidence is above 0.75">
+  A high-confidence basin shift indicates that the state field movement is unambiguous. These transitions are the most important to record, especially in operational systems where the new regime may require updated monitoring parameters.
+</Accordion>
+
+<Accordion title="Cross-scale reformation is incomplete">
+  If `reformation_complete` is `false` in the response, the system may be in an indeterminate structural state. Creating an artifact record opens a formal review thread and ensures the condition is tracked until resolution.
+</Accordion>
+
+<Accordion title="The transition occurred without a corresponding known event">
+  If the transition window does not overlap with any logged event in your context session, it is unexplained. Artifact records for unexplained transitions are especially important for operational audit trails.
+</Accordion>
+
+To create an artifact record from a transition finding:
+
+```bash
+POST https://api.coherencesystems.net/v1/artifacts
+Authorization: Bearer <your_token>
+Content-Type: application/json
+```
+
+```json
+{
+  "source_type": "transition",
+  "source_id": "trns_4c2a8f91",
+  "context_id": "ctx_7b91e44f",
+  "review_id": "rev_8a3f2c1d",
+  "notes": "Thermal regime shift confirmed. Post-transition baseline update required before resuming drift monitoring."
+}
+```
+
+<Warning>
+  Do not confuse measurement noise or brief signal instabilities with genuine transitions. A transition in Coherence Atlas requires the full cross-scale narrowing and reformation sequence alongside a detectable basin shift. Elevated drift scores or a single anomalous window are not sufficient. Use the `min_window_duration` parameter to filter out short-duration events, and always review the registered view across all three panels before creating an artifact record for a transition.
+</Warning>

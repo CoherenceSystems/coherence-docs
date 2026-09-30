@@ -1,0 +1,144 @@
+---
+title: "Measure Whether Structure Carries Forward Over Time"
+sidebarTitle: "Persistence"
+description: "Distinguish genuine structural persistence from momentary regularity by measuring whether meaningful patterns carry forward across time, scale, and a defined context."
+---
+
+Not every pattern you observe in a signal record is meaningful. Some regularities appear briefly and vanish — artifacts of measurement timing, transient conditions, or coincidental alignment. Persistence in Coherence Atlas answers a more demanding question: does the structure you see at one moment actually carry forward, or is it only momentarily regular? That distinction matters because methods and systems that depend on stable structure need more than a snapshot — they need evidence that the structure holds.
+
+## What Persistence Means
+
+Persistence is the measure of whether meaningful structure in a signal environment continues to be present over time, at consistent scales, and relative to the conditions defined in your review context. It is not the same as stationarity, smoothness, or low variance. A system can be highly variable and still exhibit strong persistence if its organizational structure — the relationships between signals, the shape of its state path, the cross-scale pattern — remains coherent over time.
+
+### Momentary Regularity vs. Genuine Persistence
+
+<CardGroup cols={2}>
+  <Card title="Momentary Regularity" icon="bolt">
+    A pattern that appears in a short window and does not recur. It may pass statistical regularity tests on a snapshot but cannot be shown to carry forward to adjacent windows or to hold at multiple scales simultaneously.
+  </Card>
+  <Card title="Genuine Persistence" icon="arrow-right-long">
+    A pattern that is recoverable across successive time windows, appears consistently at at least one scale level, and holds relative to the declared operating conditions. It survives the forward-looking test.
+  </Card>
+</CardGroup>
+
+Coherence Atlas distinguishes these by evaluating structure not just within a window but across windows, and not just at one scale but at fine, mid, and broad scales simultaneously. A result that passes at only one scale and only one window is flagged as a candidate for further review rather than confirmed persistence.
+
+## How Coherence Atlas Measures Persistence
+
+Persistence analysis runs inside a declared context — the review question, signal set, operating conditions, and time window you established in your context session. The engine evaluates your signals across three dimensions:
+
+<Steps>
+  <Step title="Temporal Carry-Forward">
+    The analysis steps through successive sub-windows of your time range and checks whether the structural signature present in each window is recoverable in the next. Windows where the structure fails to carry forward are recorded as discontinuities.
+  </Step>
+  <Step title="Cross-Scale Evaluation">
+    At each temporal step, the structural pattern is evaluated at fine, mid, and broad scale levels. Genuine persistence tends to appear at more than one scale. Patterns that appear only at fine scale receive lower persistence weight.
+  </Step>
+  <Step title="Context-Relative Scoring">
+    Results are scored relative to the operating conditions declared in your context session. A structure that holds only within a specific condition band is noted as conditionally persistent rather than unconditionally persistent.
+  </Step>
+</Steps>
+
+## The Persistence Score
+
+The persistence score for a signal or signal set is expressed as a value from **0.0 to 1.0**.
+
+| Score Range | Interpretation |
+|---|---|
+| **0.85 – 1.0** | Strong persistence. Structure carries forward reliably across the reviewed window. Suitable as a stable reference for method validation or baseline comparison. |
+| **0.60 – 0.84** | Moderate persistence. Structure is present but shows intermittent discontinuities. Review the flagged sub-windows to determine whether discontinuities correspond to known events. |
+| **0.35 – 0.59** | Weak persistence. Structural patterns appear but do not reliably carry forward. Drift or transition analysis is recommended before drawing conclusions. |
+| **0.00 – 0.34** | No meaningful persistence detected. The signal environment does not retain recognizable structure across the reviewed window under the declared context. |
+
+Scores are reported at each scale level individually, plus an aggregate score across scales. A high aggregate score with a low fine-scale score indicates that structure is organized at the system level but not at the local signal level — a pattern often associated with early-stage drift.
+
+## API Usage
+
+Retrieve persistence metrics for a registered signal using `GET /signals/{id}/persistence`.
+
+### Parameters
+
+<ParamField query="time_range" type="string" required>
+  ISO 8601 interval string specifying the start and end of the analysis window, e.g. `2024-09-01T00:00:00Z/2024-09-30T23:59:59Z`.
+</ParamField>
+
+<ParamField query="scale_level" type="string">
+  Which scale level to evaluate: `fine`, `mid`, `broad`, or `all` (default). Passing `all` returns scores at each level plus an aggregate.
+</ParamField>
+
+<ParamField query="context_id" type="string" required>
+  The `context_id` from your active review session. Results are always scored relative to the declared context.
+</ParamField>
+
+<ParamField query="window_step" type="string">
+  The sub-window step size as an ISO 8601 duration, e.g. `PT6H` for six-hour steps. Defaults to one-tenth of the total time range.
+</ParamField>
+
+### Example Request
+
+```bash
+GET https://api.coherencesystems.net/v1/signals/sig_therm_001/persistence
+  ?time_range=2024-09-01T00:00:00Z/2024-09-30T23:59:59Z
+  &scale_level=all
+  &context_id=ctx_7b91e44f
+  &window_step=PT12H
+Authorization: Bearer <your_token>
+```
+
+### Example Response
+
+```json
+{
+  "signal_id": "sig_therm_001",
+  "context_id": "ctx_7b91e44f",
+  "time_range": {
+    "start": "2024-09-01T00:00:00Z",
+    "end": "2024-09-30T23:59:59Z"
+  },
+  "persistence_scores": {
+    "fine": 0.61,
+    "mid": 0.79,
+    "broad": 0.83,
+    "aggregate": 0.74
+  },
+  "discontinuities": [
+    {
+      "window_start": "2024-09-14T00:00:00Z",
+      "window_end": "2024-09-14T12:00:00Z",
+      "scale": "fine",
+      "severity": "moderate",
+      "note": "Overlaps with logged maintenance event at 2024-09-14T08:30:00Z"
+    }
+  ],
+  "conditional_persistence": {
+    "condition": "load_profile=high",
+    "score": 0.81
+  },
+  "evaluated_at": "2024-10-02T11:22:44Z"
+}
+```
+
+## Interpreting Persistence Results
+
+The aggregate score of **0.74** in the example above indicates moderate-to-strong persistence, but the fine-scale score of **0.61** is worth examining. The flagged discontinuity window aligns precisely with the logged maintenance event — a good sign that the dip in fine-scale persistence reflects a known intervention rather than unexpected structural loss.
+
+The `conditional_persistence` field shows that under high-load conditions specifically, the score rises to **0.81**. This means the signal holds its structure well during the operating regime of interest, and the overall aggregate score is partly pulled down by transitional periods around regime changes.
+
+**When scores are high:** Your signal environment is retaining structure reliably. You can use this period as a reference baseline or proceed to drift analysis with confidence that you have a coherent starting point.
+
+**When scores are low:** Structure is not carrying forward as expected. Before concluding that the system is degrading, check whether the low-persistence windows correspond to known events in your context record. If they do not, proceed to drift and transition analysis to characterize what is happening.
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Method Validation for Researchers" icon="flask">
+    Use persistence analysis to verify that the structural signatures your method depends on are genuinely stable in your benchmark or simulation data, not artifacts of a particular snapshot window.
+  </Card>
+  <Card title="Stability Monitoring for Enterprise Teams" icon="shield-check">
+    Run persistence review on operational signals to confirm that system structure is holding between scheduled inspections — and to detect early-stage degradation before it becomes a performance issue.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Pair persistence analysis with drift analysis on the same context session. A signal with moderate persistence and rising drift scores is a candidate for closer review — the structure is still partially present but is moving. A signal with low persistence and low drift may have already reorganized into a new regime, which calls for transition analysis instead.
+</Tip>

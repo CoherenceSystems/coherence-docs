@@ -1,0 +1,288 @@
+---
+title: "Knowledge Graph Nodes and Edges in Coherence Atlas"
+sidebarTitle: "Nodes & Edges"
+description: "Reference every node type and edge type in the Coherence Atlas knowledge graph — properties, directionality, creation conditions, and JSON representations."
+---
+
+The Coherence Atlas knowledge graph is built from two primitives: nodes, which represent discrete entities in your signal environment, and edges, which encode the relationships between them. Understanding which node and edge types exist — and when each is created — lets you interpret graph query results accurately and design signal registration schemas that capture the structure your analysis depends on.
+
+## Node Types
+
+Each node type represents a distinct category of entity. Nodes are created automatically during signal ingestion, review session initialization, or state field registration, depending on type.
+
+### Quick Reference
+
+| Node Type | Represents | Created When |
+|---|---|---|
+| `SignalNode` | A registered signal stream or array | Signal is ingested via `/signals` |
+| `StateNode` | A discrete system state or configuration | State field is registered or inferred at transition |
+| `ScaleNode` | A scale level (fine, mid, or broad) | Signal set is registered with scale metadata |
+| `EventNode` | A discrete time-stamped signal event | Signal event crosses a registered threshold or marker |
+| `ReviewNode` | A structured review session | Review session is created via `/reviews` |
+
+### SignalNode
+
+A `SignalNode` represents a registered signal stream or array — the foundational unit of observation in Coherence Atlas. Every signal you ingest becomes a `SignalNode` in the graph, anchoring all downstream structural and state relationships.
+
+**Key properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique signal identifier (e.g., `sig_01abc`) |
+| `name` | `string` | Human-readable signal name |
+| `domain` | `string` | Application domain (e.g., `engineered_systems`, `research_instrumentation`) |
+| `registered_at` | `ISO 8601 datetime` | Timestamp of initial registration |
+| `scale_levels` | `array[string]` | Scale levels at which this signal is observed (`fine`, `mid`, `broad`) |
+
+**Created when:** A signal is ingested via `POST /signals`. If the signal includes scale metadata, corresponding `ScaleNode` edges are created at the same time.
+
+---
+
+### StateNode
+
+A `StateNode` represents a discrete system state or configuration — a recognizable region of the state field that the system occupies at a given time. State nodes are the anchor points for basin membership and transition analysis.
+
+**Key properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique state identifier (e.g., `state_nominal_02`) |
+| `label` | `string` | Human-readable state label |
+| `basin_id` | `string` | Identifier of the basin this state belongs to |
+| `first_observed` | `ISO 8601 datetime` | Timestamp of first observation |
+| `stability_score` | `float` | Measure of how consistently the system occupies this state (0–1) |
+
+**Created when:** A state field is explicitly registered, or inferred automatically when a `TRANSITIONS_TO` edge is created between two distinct signal configurations.
+
+---
+
+### ScaleNode
+
+A `ScaleNode` represents one of the three scale levels at which Coherence Atlas analyzes structure: `fine`, `mid`, or `broad`. Scale nodes act as organizational anchors, grouping signals and patterns by the resolution at which they are most meaningfully observed.
+
+**Key properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique scale node identifier |
+| `level` | `string` | One of `fine`, `mid`, or `broad` |
+| `description` | `string` | Optional label describing what this scale captures in context |
+| `signal_count` | `integer` | Number of signals currently associated with this scale node |
+
+**Created when:** A signal set is registered with explicit scale level metadata, or when a signal is updated to include scale assignments.
+
+---
+
+### EventNode
+
+An `EventNode` represents a discrete, time-stamped occurrence within a signal stream — a moment where something structurally meaningful happened. Event nodes are the building blocks of temporal relationship analysis and the primary anchors for `PRECEDES` edges.
+
+**Key properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique event identifier |
+| `signal_id` | `string` | ID of the parent `SignalNode` |
+| `occurred_at` | `ISO 8601 datetime` | Timestamp of the event |
+| `event_type` | `string` | Classifier (e.g., `threshold_crossing`, `anomaly`, `drift_marker`) |
+| `magnitude` | `float` | Relative magnitude of the event within its signal context |
+
+**Created when:** A signal event crosses a registered threshold, a drift marker is placed during a review, or an anomaly is flagged during ingestion.
+
+---
+
+### ReviewNode
+
+A `ReviewNode` represents a structured review session in Coherence Atlas — a bounded analytical context that connects a review question to the signals, states, and time window under examination.
+
+**Key properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique review session identifier |
+| `review_type` | `string` | One of `context`, `persistence`, `drift`, `transition` |
+| `created_at` | `ISO 8601 datetime` | Session creation timestamp |
+| `signal_ids` | `array[string]` | Signals scoped to this review |
+| `time_window` | `object` | `start` and `end` timestamps defining the review window |
+| `question` | `string` | The stated review question anchoring the session |
+
+**Created when:** A review session is created via `POST /reviews`.
+
+---
+
+## Edge Types
+
+Edges encode the relationships between nodes. Each edge type carries a specific relational meaning, a direction, and a set of attributes that qualify the relationship.
+
+### Quick Reference
+
+| Edge Type | Connects | Direction | Relationship Category |
+|---|---|---|---|
+| `PRECEDES` | `EventNode` → `EventNode` | Directed | Temporal |
+| `CORRELATES_WITH` | `SignalNode` ↔ `SignalNode` | Undirected | Structural |
+| `TRANSITIONS_TO` | `StateNode` → `StateNode` | Directed | State |
+| `BELONGS_TO_BASIN` | `StateNode` → `StateNode` (basin root) | Directed | State geometry |
+| `OBSERVED_AT_SCALE` | `SignalNode` → `ScaleNode` | Directed | Scale membership |
+
+---
+
+### PRECEDES
+
+`PRECEDES` is a directed temporal edge between two `EventNode` instances. It encodes the fact that one signal event was observed before another within a registered time window. Chains of `PRECEDES` edges form the temporal skeleton used for sequence analysis and lag detection.
+
+**Direction:** `EventNode (source)` → `EventNode (target)`
+
+**Key attributes:**
+
+| Attribute | Type | Description |
+|---|---|---|
+| `lag_ms` | `integer` | Time difference between events in milliseconds |
+| `window_id` | `string` | ID of the registered time window in which the relationship was observed |
+| `confidence` | `float` | Statistical confidence of the temporal ordering (0–1) |
+
+---
+
+### CORRELATES_WITH
+
+`CORRELATES_WITH` is an undirected structural edge between two `SignalNode` instances. It encodes co-movement, shared structural participation, or measured correlation without asserting a causal direction. This edge is the primary carrier of cross-scale structural information.
+
+**Direction:** Undirected (`SignalNode` ↔ `SignalNode`)
+
+**Key attributes:**
+
+| Attribute | Type | Description |
+|---|---|---|
+| `correlation_coefficient` | `float` | Measured correlation strength (−1 to 1) |
+| `scale_level` | `string` | Scale at which the correlation was observed (`fine`, `mid`, `broad`) |
+| `window_id` | `string` | Time window in which the correlation was measured |
+
+---
+
+### TRANSITIONS_TO
+
+`TRANSITIONS_TO` is a directed state edge between two `StateNode` instances, recording an observed movement from one basin region to another. These edges are the primary resource for Transition review and regime shift analysis.
+
+**Direction:** `StateNode (origin state)` → `StateNode (destination state)`
+
+**Key attributes:**
+
+| Attribute | Type | Description |
+|---|---|---|
+| `occurred_at` | `ISO 8601 datetime` | Timestamp of the transition |
+| `transition_type` | `string` | Classification (e.g., `gradual`, `abrupt`, `oscillatory`) |
+| `leading_signal_ids` | `array[string]` | Signals that preceded the transition |
+| `confidence` | `float` | Confidence that a genuine regime shift occurred (0–1) |
+
+---
+
+### BELONGS_TO_BASIN
+
+`BELONGS_TO_BASIN` is a directed state-geometry edge from a `StateNode` to the root node of its containing basin. It encodes the state field geometry — which states are nearby, which are distant, and how the system's state path is organized spatially.
+
+**Direction:** `StateNode` → `StateNode (basin root)`
+
+**Key attributes:**
+
+| Attribute | Type | Description |
+|---|---|---|
+| `basin_id` | `string` | Identifier of the containing basin |
+| `proximity_score` | `float` | How centrally the state sits within the basin (0–1, 1 = core) |
+| `assigned_at` | `ISO 8601 datetime` | When the basin membership was assigned |
+
+---
+
+### OBSERVED_AT_SCALE
+
+`OBSERVED_AT_SCALE` is a directed scale-membership edge from a `SignalNode` to a `ScaleNode`. It records that a given signal contributes structural information at a specific scale level, enabling cross-scale traversal queries.
+
+**Direction:** `SignalNode` → `ScaleNode`
+
+**Key attributes:**
+
+| Attribute | Type | Description |
+|---|---|---|
+| `scale_level` | `string` | One of `fine`, `mid`, or `broad` |
+| `registered_at` | `ISO 8601 datetime` | When the scale membership was registered |
+| `weight` | `float` | Relative contribution of this signal to structure at this scale (0–1) |
+
+---
+
+## JSON Representations
+
+The following examples show the JSON format returned by the `/graph` API for node and edge objects.
+
+**Signal node:**
+
+```json
+{
+  "type": "SignalNode",
+  "id": "sig_01abc",
+  "properties": {
+    "name": "reactor-temperature-array",
+    "domain": "engineered_systems",
+    "registered_at": "2025-01-15T09:00:00Z",
+    "scale_levels": ["fine", "mid", "broad"]
+  }
+}
+```
+
+**Event node:**
+
+```json
+{
+  "type": "EventNode",
+  "id": "evt_007xz",
+  "properties": {
+    "signal_id": "sig_01abc",
+    "occurred_at": "2025-01-15T11:42:00Z",
+    "event_type": "threshold_crossing",
+    "magnitude": 0.87
+  }
+}
+```
+
+**State node:**
+
+```json
+{
+  "type": "StateNode",
+  "id": "state_nominal_02",
+  "properties": {
+    "label": "nominal-operating-range",
+    "basin_id": "basin_stable_A",
+    "first_observed": "2025-01-10T06:00:00Z",
+    "stability_score": 0.93
+  }
+}
+```
+
+**PRECEDES edge:**
+
+```json
+{
+  "type": "PRECEDES",
+  "source": "evt_007xz",
+  "target": "evt_008pq",
+  "attributes": {
+    "lag_ms": 4200,
+    "window_id": "win_2025-01-15",
+    "confidence": 0.91
+  }
+}
+```
+
+**TRANSITIONS_TO edge:**
+
+```json
+{
+  "type": "TRANSITIONS_TO",
+  "source": "state_nominal_02",
+  "target": "state_elevated_threshold_01",
+  "attributes": {
+    "occurred_at": "2025-01-15T14:10:00Z",
+    "transition_type": "gradual",
+    "leading_signal_ids": ["sig_01abc", "sig_02def"],
+    "confidence": 0.78
+  }
+}
+```

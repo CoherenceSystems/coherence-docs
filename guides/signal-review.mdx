@@ -1,0 +1,286 @@
+---
+title: "Running a Complete Signal Review Session"
+sidebarTitle: "Signal Review"
+description: "Walk through every stage of a signal review in Coherence Atlas — from context definition and signal registration to artifact record creation and export."
+---
+
+A signal review session in Coherence Atlas moves you from raw observations to a documented, auditable finding. Each stage keeps your review question and interpretation limits visible alongside the evidence, so conclusions stay grounded in what the data actually supports. The walkthrough below covers a full session from initial context setup through final export.
+
+<Note>
+  Synthetic signal data is fully acceptable for initial testing. Coherence Atlas treats synthetic and real signals identically during ingestion and review — this makes it straightforward to validate your setup and method choices before committing production data.
+</Note>
+
+<Steps>
+
+  ### Define Your Context
+
+  Before any signals are ingested, record the review question, the signal set you intend to examine, and the time window under review. Clear context definition prevents scope drift during analysis and anchors the artifact record you will create at the end.
+
+  Decide on:
+  - **Review question** — the specific thing you are trying to determine (e.g., "Has structural coherence in this sensor cluster degraded since the last maintenance cycle?")
+  - **Signal set** — which signals are in scope and what they represent
+  - **Time window** — the start and end timestamps bounding the review period
+  - **Scale levels** — fine, mid, and/or broad depending on your system
+
+  Keep these decisions written down. You will pass them directly into the API in the next step.
+
+  ### Register Your Signals
+
+  Submit your signal set to the `/signals` endpoint. Each signal entry requires a unique identifier, a data type, a time-series payload, and optional metadata describing its role in your system.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/signals
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "session_id": "review-2024-ops-cluster-07",
+    "review_question": "Has structural coherence in sensor cluster 07 degraded since the last maintenance cycle?",
+    "time_window": {
+      "start": "2024-09-01T00:00:00Z",
+      "end":   "2024-11-30T23:59:59Z"
+    },
+    "scale_levels": ["fine", "mid", "broad"],
+    "signals": [
+      {
+        "id": "sig_pressure_a",
+        "label": "Pressure Sensor A",
+        "type": "continuous",
+        "unit": "kPa",
+        "series": [
+          { "t": "2024-09-01T00:00:00Z", "v": 101.3 },
+          { "t": "2024-09-01T00:15:00Z", "v": 101.5 }
+        ]
+      },
+      {
+        "id": "sig_temp_b",
+        "label": "Temperature Sensor B",
+        "type": "continuous",
+        "unit": "°C",
+        "series": [
+          { "t": "2024-09-01T00:00:00Z", "v": 22.4 },
+          { "t": "2024-09-01T00:15:00Z", "v": 22.6 }
+        ]
+      }
+    ]
+  }
+  ```
+
+  A successful registration returns a `signal_set_id` you will use throughout the rest of the session.
+
+  ```json
+  {
+    "signal_set_id": "sset_9f3a2c1d",
+    "registered_signals": 2,
+    "status": "ready"
+  }
+  ```
+
+  ### Run the Initial Persistence Scan
+
+  With signals registered, request a persistence scan. This step asks Coherence Atlas whether meaningful structure in your signal set carries forward over time, or whether apparent regularity is transient.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/signals/sset_9f3a2c1d/persistence
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "window_type": "rolling",
+    "window_duration_hours": 24,
+    "min_persistence_threshold": 0.65
+  }
+  ```
+
+  The response identifies time windows where structure persists above threshold and flags windows where persistence drops, giving you an initial map of stable versus unstable periods.
+
+  ```json
+  {
+    "scan_id": "pscan_4b8e77f2",
+    "persistent_windows": [
+      { "start": "2024-09-01T00:00:00Z", "end": "2024-09-14T23:59:59Z", "score": 0.81 },
+      { "start": "2024-10-03T00:00:00Z", "end": "2024-10-28T23:59:59Z", "score": 0.74 }
+    ],
+    "low_persistence_windows": [
+      { "start": "2024-09-15T00:00:00Z", "end": "2024-10-02T23:59:59Z", "score": 0.44 }
+    ]
+  }
+  ```
+
+  ### Check for Drift Across Scale Levels
+
+  Request a drift analysis scoped to the low-persistence window you identified. Drift review traces gradual movement, divergence, and degradation across fine, mid, and broad scale levels — keeping all three in view simultaneously.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/signals/sset_9f3a2c1d/drift
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "focus_window": {
+      "start": "2024-09-15T00:00:00Z",
+      "end":   "2024-10-02T23:59:59Z"
+    },
+    "scale_levels": ["fine", "mid", "broad"],
+    "reference_window": {
+      "start": "2024-09-01T00:00:00Z",
+      "end":   "2024-09-14T23:59:59Z"
+    }
+  }
+  ```
+
+  ```json
+  {
+    "drift_id": "drift_c1d9a0e3",
+    "scale_results": {
+      "fine":  { "drift_detected": true,  "magnitude": 0.38, "direction": "diverging" },
+      "mid":   { "drift_detected": true,  "magnitude": 0.61, "direction": "diverging" },
+      "broad": { "drift_detected": false, "magnitude": 0.09, "direction": "stable"    }
+    },
+    "summary": "Drift is detectable at fine and mid scales. Broad-scale structure remains stable during this window."
+  }
+  ```
+
+  The cross-scale contrast — drift at fine and mid but not broad — is itself meaningful context for the next step.
+
+  ### Detect Any Transition Windows
+
+  Use the drift findings to guide a transition detection pass. Transition detection looks for evidence of phase changes, regime shifts, and reorganizations that may warrant deeper review. It does not assert that a transition occurred — it identifies candidate windows for examination.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/signals/sset_9f3a2c1d/transitions
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "candidate_window": {
+      "start": "2024-09-15T00:00:00Z",
+      "end":   "2024-10-02T23:59:59Z"
+    },
+    "sensitivity": "moderate",
+    "reference_scan_id": "pscan_4b8e77f2",
+    "reference_drift_id": "drift_c1d9a0e3"
+  }
+  ```
+
+  ```json
+  {
+    "transition_id": "trans_77d2b5c8",
+    "candidate_transitions": [
+      {
+        "window_start": "2024-09-19T06:00:00Z",
+        "window_end":   "2024-09-22T18:00:00Z",
+        "confidence":   "moderate",
+        "scale_signature": ["fine", "mid"],
+        "notes": "State path geometry shows basin movement at fine and mid scales. Broad-scale basin appears stable."
+      }
+    ],
+    "review_recommendation": "Candidate transition window warrants closer inspection. Consider reviewing maintenance logs for the 19–22 September period."
+  }
+  ```
+
+  ### Review the Registered View
+
+  Open the registered view for your session. The registered view aligns all three panels — observed motion, cross-scale structure, and state field — against the same time axis so you can read them in relation to one another rather than in isolation.
+
+  ```http
+  GET https://api.coherencesystems.net/v1/signals/sset_9f3a2c1d/registered-view
+  Authorization: Bearer <your_token>
+  ```
+
+  ```json
+  {
+    "view_id": "view_3e9f1a04",
+    "panels": {
+      "observed_motion":    { "render_url": "https://atlas.coherencesystems.net/views/view_3e9f1a04/motion"    },
+      "cross_scale":        { "render_url": "https://atlas.coherencesystems.net/views/view_3e9f1a04/structure" },
+      "state_field":        { "render_url": "https://atlas.coherencesystems.net/views/view_3e9f1a04/state"     }
+    },
+    "aligned_events": [
+      { "type": "low_persistence", "start": "2024-09-15T00:00:00Z", "end": "2024-10-02T23:59:59Z" },
+      { "type": "drift",           "start": "2024-09-15T00:00:00Z", "end": "2024-10-02T23:59:59Z" },
+      { "type": "transition",      "start": "2024-09-19T06:00:00Z", "end": "2024-09-22T18:00:00Z" }
+    ]
+  }
+  ```
+
+  Use the registered view as your primary reference when writing up findings. The alignment across panels helps you identify which observations reinforce one another and where the evidence falls short of a strong claim.
+
+  ### Create an Artifact Record
+
+  Document your findings in a monitoring artifact record. The artifact record is auditable — it captures what was observed, what interpretations were drawn, and explicitly what the evidence does and does not support.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/artifacts
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "session_id":    "review-2024-ops-cluster-07",
+    "signal_set_id": "sset_9f3a2c1d",
+    "view_id":       "view_3e9f1a04",
+    "review_question": "Has structural coherence in sensor cluster 07 degraded since the last maintenance cycle?",
+    "findings": [
+      {
+        "label":    "Persistence drop mid-September",
+        "evidence": ["pscan_4b8e77f2"],
+        "claim":    "Structural persistence dropped below threshold between 15 Sep and 2 Oct.",
+        "limit":    "Cause of the drop is not established by this review."
+      },
+      {
+        "label":    "Fine and mid-scale drift",
+        "evidence": ["drift_c1d9a0e3"],
+        "claim":    "Drift is detectable at fine and mid scales during the low-persistence window.",
+        "limit":    "Broad-scale structure remained stable; system-level degradation is not confirmed."
+      },
+      {
+        "label":    "Candidate transition window",
+        "evidence": ["trans_77d2b5c8"],
+        "claim":    "A candidate transition window exists between 19–22 September warranting deeper review.",
+        "limit":    "Moderate confidence only. Correlation with maintenance records is recommended before drawing operational conclusions."
+      }
+    ],
+    "reviewer": "analyst@example.com",
+    "created_at": "2024-12-01T10:00:00Z"
+  }
+  ```
+
+  ```json
+  {
+    "artifact_id": "art_2f0c8d71",
+    "status": "created",
+    "share_url": "https://atlas.coherencesystems.net/artifacts/art_2f0c8d71"
+  }
+  ```
+
+  ### Export or Share the Review Record
+
+  Export the completed artifact record as JSON or PDF, or share the review URL directly with stakeholders.
+
+  ```http
+  GET https://api.coherencesystems.net/v1/artifacts/art_2f0c8d71/export?format=pdf
+  Authorization: Bearer <your_token>
+  ```
+
+  ```json
+  {
+    "artifact_id": "art_2f0c8d71",
+    "export_format": "pdf",
+    "download_url": "https://atlas.coherencesystems.net/exports/art_2f0c8d71.pdf",
+    "expires_at": "2024-12-08T10:00:00Z"
+  }
+  ```
+
+  Share the `share_url` from the artifact record for browser-based access, or distribute the exported file for offline review. Both formats include the full context definition, findings, and claim boundaries recorded during the session.
+
+</Steps>

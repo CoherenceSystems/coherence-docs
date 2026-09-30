@@ -1,0 +1,169 @@
+---
+title: "Review Gradual Structural Movement and Degradation"
+sidebarTitle: "Drift"
+description: "Track directional movement, divergence, and structural degradation across fine, mid, and broad scales, always anchored to a declared review context and signal set."
+---
+
+Systems rarely fail all at once. Before a significant transition, there is usually a period of gradual movement — signals shifting away from their established operating range, structural relationships loosening, or coherence slowly degrading. Drift in Coherence Atlas is the structured review of that gradual movement. It is always conducted inside a declared context, so that you can distinguish movement that is expected given known conditions from movement that genuinely warrants attention.
+
+## What Drift Means
+
+Drift is reviewed across three distinct expressions, each pointing to a different mechanism of change in your signal environment:
+
+<CardGroup cols={3}>
+  <Card title="Directional Drift" icon="arrow-trend-up">
+    Systematic movement of a signal or structural pattern in a consistent direction over time. The signal is not just varying — it is trending away from its established position relative to the context baseline.
+  </Card>
+  <Card title="Divergence" icon="arrows-split-up-and-left">
+    Spreading between signals or structural patterns that were previously more tightly coupled. Divergence indicates a loosening of relationships across the signal set, often a precursor to reorganization.
+  </Card>
+  <Card title="Degradation" icon="chart-line-down">
+    Loss of structural coherence — patterns that were present become less recoverable, cross-scale agreement weakens, or the persistence score declines progressively. Degradation may or may not be accompanied by directional movement.
+  </Card>
+</CardGroup>
+
+A single review period can show all three types simultaneously or only one. Each type is reported independently so you can see which mechanism is driving the change you observe.
+
+## How Coherence Atlas Tracks Drift Across Scales
+
+Drift is evaluated at fine, mid, and broad scale levels, which allows you to see whether movement is a local signal-level phenomenon or a system-wide reorganization in progress.
+
+| Scale Level | What It Captures |
+|---|---|
+| **Fine** | Short-range, local signal movement — the earliest indication of drift, often appearing at fine scale before propagating upward. |
+| **Mid** | Intermediate structural relationships — the coupling between signals and sub-system groupings. Mid-scale drift often indicates that a local effect is becoming structural. |
+| **Broad** | System-level patterns — the overall geometry of the state path and the dominant organizational modes. Broad-scale drift signals a regime-level shift is underway. |
+
+Drift that appears at all three scale levels simultaneously is a strong indicator that the change is systemic rather than local. Drift confined to the fine scale may resolve on its own or may represent the leading edge of a larger movement — context and trajectory both matter.
+
+## The Drift Timeline
+
+Every drift review produces a **drift timeline**: a time-ordered record of drift events, scored by type and scale, linked to the Coherence Atlas knowledge graph. The timeline lets you see when drift began, how it evolved, and whether it accelerated or stabilized. Each event on the timeline carries:
+
+- Timestamp and duration of the drift episode
+- Drift type (directional, divergence, or degradation)
+- Scale level(s) at which it was detected
+- Magnitude score relative to the context baseline
+- Links to related graph nodes — signals, states, and structural elements involved
+
+The timeline is exportable as part of a monitoring artifact record for audit and review purposes.
+
+## API Usage
+
+Retrieve drift analysis for a registered signal using `GET /signals/{id}/drift`.
+
+### Parameters
+
+<ParamField query="time_range" type="string" required>
+  ISO 8601 interval string for the analysis window, e.g. `2024-09-01T00:00:00Z/2024-09-30T23:59:59Z`.
+</ParamField>
+
+<ParamField query="scale_level" type="string">
+  Scale level to evaluate: `fine`, `mid`, `broad`, or `all` (default). Passing `all` returns results at each level.
+</ParamField>
+
+<ParamField query="threshold" type="number">
+  Minimum drift magnitude (0.0–1.0) to include in results. Events below this threshold are suppressed. Defaults to `0.2`. Lower the threshold to surface early-stage drift; raise it to focus on significant events only.
+</ParamField>
+
+<ParamField query="context_id" type="string" required>
+  The `context_id` from your active review session. Drift magnitude is always measured relative to the declared context baseline.
+</ParamField>
+
+### Example Request
+
+```bash
+GET https://api.coherencesystems.net/v1/signals/sig_therm_001/drift
+  ?time_range=2024-09-01T00:00:00Z/2024-09-30T23:59:59Z
+  &scale_level=all
+  &threshold=0.15
+  &context_id=ctx_7b91e44f
+Authorization: Bearer <your_token>
+```
+
+### Example Response
+
+```json
+{
+  "signal_id": "sig_therm_001",
+  "context_id": "ctx_7b91e44f",
+  "time_range": {
+    "start": "2024-09-01T00:00:00Z",
+    "end": "2024-09-30T23:59:59Z"
+  },
+  "drift_summary": {
+    "dominant_type": "directional",
+    "max_magnitude": 0.67,
+    "onset_timestamp": "2024-09-18T06:00:00Z",
+    "scale_levels_affected": ["fine", "mid"]
+  },
+  "drift_timeline": [
+    {
+      "event_id": "drft_001",
+      "timestamp": "2024-09-18T06:00:00Z",
+      "duration_hours": 72,
+      "type": "directional",
+      "scale": "fine",
+      "magnitude": 0.38,
+      "graph_node_refs": ["node_sig_therm_001_state_a"]
+    },
+    {
+      "event_id": "drft_002",
+      "timestamp": "2024-09-21T00:00:00Z",
+      "duration_hours": 96,
+      "type": "directional",
+      "scale": "mid",
+      "magnitude": 0.67,
+      "graph_node_refs": ["node_sig_therm_001_state_a", "node_sig_therm_002_coupling"]
+    }
+  ],
+  "alert_triggered": false,
+  "evaluated_at": "2024-10-02T11:38:19Z"
+}
+```
+
+## Drift Alerts and Thresholds
+
+You can configure drift alert thresholds directly within your review session so that events exceeding a defined magnitude are flagged automatically without requiring manual inspection of each query result.
+
+To set alert thresholds, update your review record with a `drift_alerts` configuration:
+
+```bash
+PATCH https://api.coherencesystems.net/v1/reviews/rev_8a3f2c1d
+Authorization: Bearer <your_token>
+Content-Type: application/json
+```
+
+```json
+{
+  "drift_alerts": {
+    "enabled": true,
+    "threshold": 0.50,
+    "scale_levels": ["mid", "broad"],
+    "types": ["directional", "degradation"],
+    "notify": ["ops-team@example.com"]
+  }
+}
+```
+
+When a drift event meets or exceeds the configured threshold on a monitored scale and type, the review session is flagged and the listed recipients are notified. Alert events are written to the monitoring artifact record automatically.
+
+## Interpreting Drift Results
+
+<Accordion title="When drift is expected">
+  Not all drift is a problem. If your context session includes known operating condition changes — a shift to a higher load profile, a seasonal change, a planned configuration update — then directional drift aligned with those events is the system responding to declared conditions. Check whether onset timestamps correspond to logged events before escalating.
+</Accordion>
+
+<Accordion title="When drift signals a problem">
+  Drift that begins without a corresponding known event, accelerates across multiple scale levels, or involves degradation alongside directional movement warrants closer review. Broad-scale drift that was not preceded by a known condition change is the most significant indicator — it suggests the system's dominant organizational mode is shifting.
+</Accordion>
+
+<Accordion title="When drift is intermittent">
+  Drift that appears and resolves repeatedly at the fine scale without propagating upward may reflect measurement variability or transient environmental factors. Use a higher threshold to focus on persistent episodes and check whether the pattern is stable across multiple review windows.
+</Accordion>
+
+## Relationship to Transition Detection
+
+Drift and transition are closely related but distinct. Drift tracks gradual movement within a regime — the system is still recognizably itself, but its structural position is changing. When drift accelerates, broadens across scale levels, and is accompanied by a narrowing of cross-scale structure, it may be entering a transition — a reorganization into a different regime altogether.
+
+If your drift timeline shows increasing magnitude at mid and broad scales over successive windows, run a transition analysis on the same context session to determine whether a regime shift is underway. See [Transition](/capabilities/transition) for details.

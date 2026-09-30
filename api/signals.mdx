@@ -1,0 +1,548 @@
+---
+title: "Signals API: Register, Query, and Analyze Signal Sets"
+sidebarTitle: "Signals"
+description: "Full reference for the /signals endpoints — ingest signal sets, retrieve drift and persistence analyses, and query detected transition windows."
+---
+
+The `/signals` endpoints are your entry point for bringing signal data into Coherence Atlas. You register a signal set once, then query it repeatedly for drift, persistence, and transition analyses without re-uploading raw data. Every registered signal set becomes a named, versioned resource you can reference across review sessions and artifact records.
+
+<Note>
+  All requests require a Bearer token in the `Authorization` header. Base URL: `https://api.coherencesystems.net/v1`
+</Note>
+
+---
+
+## POST /signals
+
+Register a new signal set with Coherence Atlas. The signal set record stores your signal metadata, domain classification, and scale-level configuration — not the raw time-series data itself. After registration, use your data ingestion pipeline or the Atlas UI to stream or upload observations against this record.
+
+### Request body
+
+<ParamField body="name" type="string" required>
+  A unique, human-readable identifier for the signal set within your account. Use lowercase letters, numbers, and hyphens (e.g., `reactor-temperature-array`).
+</ParamField>
+
+<ParamField body="domain" type="string" required>
+  The application domain for this signal set. Accepted values: `research`, `engineered_systems`, `instrumentation`, `review_workflow`.
+</ParamField>
+
+<ParamField body="scale_levels" type="array of strings" required>
+  The cross-scale structure levels to activate for analysis. Include one or more of `"fine"`, `"mid"`, `"broad"`. At least one level is required.
+</ParamField>
+
+<ParamField body="signals" type="array of objects" required>
+  The individual signal channels belonging to this set.
+
+  <Expandable title="Signal channel fields">
+    <ParamField body="signals[].id" type="string" required>
+      A unique identifier for this channel within the set (e.g., `temp_01`).
+    </ParamField>
+    <ParamField body="signals[].unit" type="string" required>
+      The physical unit of measurement for this channel (e.g., `celsius`, `bar`, `rpm`).
+    </ParamField>
+    <ParamField body="signals[].sample_rate_hz" type="number" required>
+      The expected sample rate in hertz for this channel.
+    </ParamField>
+    <ParamField body="signals[].description" type="string">
+      Optional free-text description of what this channel measures.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="tags" type="array of strings">
+  Optional labels to help organize and filter signal sets in list views (e.g., `["pilot", "thermal", "q1-2025"]`).
+</ParamField>
+
+### Example request
+
+```bash
+curl -X POST https://api.coherencesystems.net/v1/signals \
+  -H "Authorization: Bearer $ATLAS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "reactor-temperature-array",
+    "domain": "engineered_systems",
+    "scale_levels": ["fine", "mid", "broad"],
+    "signals": [
+      { "id": "temp_01", "unit": "celsius", "sample_rate_hz": 10 },
+      { "id": "temp_02", "unit": "celsius", "sample_rate_hz": 10 }
+    ],
+    "tags": ["thermal", "reactor-bay-3"]
+  }'
+```
+
+### Example response
+
+```json
+{
+  "id": "sig_01abc",
+  "name": "reactor-temperature-array",
+  "domain": "engineered_systems",
+  "scale_levels": ["fine", "mid", "broad"],
+  "signals": [
+    { "id": "temp_01", "unit": "celsius", "sample_rate_hz": 10, "description": null },
+    { "id": "temp_02", "unit": "celsius", "sample_rate_hz": 10, "description": null }
+  ],
+  "tags": ["thermal", "reactor-bay-3"],
+  "status": "registered",
+  "created_at": "2025-01-15T12:00:00Z",
+  "updated_at": "2025-01-15T12:00:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Missing required field or invalid `domain` / `scale_levels` value |
+| `409` | A signal set with this `name` already exists in your account |
+| `422` | `signals` array is empty or a channel is missing required fields |
+
+---
+
+## GET /signals
+
+List all signal sets registered to your account. Results are paginated and can be filtered by domain or tag.
+
+### Query parameters
+
+<ParamField query="domain" type="string">
+  Filter by application domain. Accepted values: `research`, `engineered_systems`, `instrumentation`, `review_workflow`.
+</ParamField>
+
+<ParamField query="tag" type="string">
+  Filter to signal sets that include this tag (exact match).
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by registration status. Accepted values: `registered`, `ingesting`, `ready`, `archived`.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of results per page. Default: `20`. Maximum: `100`.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Pagination offset. Default: `0`.
+</ParamField>
+
+### Example request
+
+```bash
+curl https://api.coherencesystems.net/v1/signals?domain=engineered_systems&limit=10 \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "sig_01abc",
+      "name": "reactor-temperature-array",
+      "domain": "engineered_systems",
+      "scale_levels": ["fine", "mid", "broad"],
+      "status": "ready",
+      "tags": ["thermal", "reactor-bay-3"],
+      "created_at": "2025-01-15T12:00:00Z",
+      "updated_at": "2025-01-15T12:00:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 10,
+  "offset": 0
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Invalid query parameter value |
+
+---
+
+## GET /signals/{id}
+
+Retrieve full details for a specific signal set, including all channel definitions and current status.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set (e.g., `sig_01abc`).
+</ParamField>
+
+### Example request
+
+```bash
+curl https://api.coherencesystems.net/v1/signals/sig_01abc \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "id": "sig_01abc",
+  "name": "reactor-temperature-array",
+  "domain": "engineered_systems",
+  "scale_levels": ["fine", "mid", "broad"],
+  "signals": [
+    { "id": "temp_01", "unit": "celsius", "sample_rate_hz": 10, "description": null },
+    { "id": "temp_02", "unit": "celsius", "sample_rate_hz": 10, "description": null }
+  ],
+  "tags": ["thermal", "reactor-bay-3"],
+  "status": "ready",
+  "observation_count": 86400,
+  "time_range": {
+    "earliest": "2025-01-14T00:00:00Z",
+    "latest": "2025-01-15T00:00:00Z"
+  },
+  "created_at": "2025-01-15T12:00:00Z",
+  "updated_at": "2025-01-15T12:00:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `404` | Signal set not found or does not belong to your account |
+
+---
+
+## PATCH /signals/{id}
+
+Update the metadata for an existing signal set. You can rename it, change its tags, or update channel descriptions. You cannot change `domain`, `scale_levels`, or the `signals` array after registration — create a new signal set for structural changes.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set to update.
+</ParamField>
+
+### Request body
+
+<ParamField body="name" type="string">
+  New name for the signal set. Must be unique within your account.
+</ParamField>
+
+<ParamField body="tags" type="array of strings">
+  Replacement tag list. This overwrites the existing tags entirely — include all tags you want to keep.
+</ParamField>
+
+<ParamField body="signals" type="array of objects">
+  Update channel descriptions only. Each object must include the channel `id` and the fields to change.
+
+  <Expandable title="Updatable channel fields">
+    <ParamField body="signals[].id" type="string" required>
+      The channel identifier to update.
+    </ParamField>
+    <ParamField body="signals[].description" type="string">
+      Updated description for this channel.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Example request
+
+```bash
+curl -X PATCH https://api.coherencesystems.net/v1/signals/sig_01abc \
+  -H "Authorization: Bearer $ATLAS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tags": ["thermal", "reactor-bay-3", "q1-2025"],
+    "signals": [
+      { "id": "temp_01", "description": "Inlet temperature probe, north face" },
+      { "id": "temp_02", "description": "Outlet temperature probe, north face" }
+    ]
+  }'
+```
+
+### Example response
+
+```json
+{
+  "id": "sig_01abc",
+  "name": "reactor-temperature-array",
+  "domain": "engineered_systems",
+  "scale_levels": ["fine", "mid", "broad"],
+  "signals": [
+    { "id": "temp_01", "unit": "celsius", "sample_rate_hz": 10, "description": "Inlet temperature probe, north face" },
+    { "id": "temp_02", "unit": "celsius", "sample_rate_hz": 10, "description": "Outlet temperature probe, north face" }
+  ],
+  "tags": ["thermal", "reactor-bay-3", "q1-2025"],
+  "status": "ready",
+  "created_at": "2025-01-15T12:00:00Z",
+  "updated_at": "2025-01-15T15:00:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Attempt to modify immutable fields (`domain`, `scale_levels`) |
+| `404` | Signal set not found |
+| `409` | Updated `name` conflicts with an existing signal set |
+
+---
+
+## DELETE /signals/{id}
+
+Remove a signal set and all associated observations from Coherence Atlas. This action is permanent and cannot be undone. Any artifact records or review sessions that reference this signal set will retain their analysis snapshots, but live re-analysis will no longer be available.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set to remove.
+</ParamField>
+
+### Example request
+
+```bash
+curl -X DELETE https://api.coherencesystems.net/v1/signals/sig_01abc \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "id": "sig_01abc",
+  "deleted": true,
+  "deleted_at": "2025-01-16T09:00:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `404` | Signal set not found |
+| `409` | Signal set is currently in use by an active review session |
+
+---
+
+## GET /signals/{id}/drift
+
+Retrieve the drift analysis for a signal set over a specified time window. Drift analysis surfaces gradual movement, divergence, and degradation patterns reviewed within the context you provide. Results include per-scale drift scores and flagged drift events.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="start" type="string (ISO 8601)" required>
+  Start of the analysis window (e.g., `2025-01-14T00:00:00Z`).
+</ParamField>
+
+<ParamField query="end" type="string (ISO 8601)" required>
+  End of the analysis window.
+</ParamField>
+
+<ParamField query="scale" type="string">
+  Restrict results to a single scale level: `fine`, `mid`, or `broad`. Omit to receive results for all registered scale levels.
+</ParamField>
+
+<ParamField query="sensitivity" type="number">
+  Drift detection sensitivity between `0.0` (least sensitive) and `1.0` (most sensitive). Default: `0.5`.
+</ParamField>
+
+### Example request
+
+```bash
+curl "https://api.coherencesystems.net/v1/signals/sig_01abc/drift?start=2025-01-14T00:00:00Z&end=2025-01-15T00:00:00Z&sensitivity=0.6" \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "signal_set_id": "sig_01abc",
+  "window": {
+    "start": "2025-01-14T00:00:00Z",
+    "end": "2025-01-15T00:00:00Z"
+  },
+  "drift_scores": {
+    "fine": 0.23,
+    "mid": 0.51,
+    "broad": 0.14
+  },
+  "drift_events": [
+    {
+      "scale": "mid",
+      "onset": "2025-01-14T06:32:00Z",
+      "duration_minutes": 47,
+      "magnitude": 0.68,
+      "channels_involved": ["temp_01", "temp_02"]
+    }
+  ],
+  "summary": "One mid-scale drift event detected following the maintenance window. Fine and broad-scale structure remained stable.",
+  "computed_at": "2025-01-15T12:05:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Missing or invalid `start` / `end` parameters |
+| `404` | Signal set not found |
+| `422` | Requested window falls outside available observation data |
+
+---
+
+## GET /signals/{id}/persistence
+
+Retrieve persistence analysis for a signal set. Persistence measures whether meaningful structure carries forward over time rather than appearing only momentarily regular. Results are broken down by scale level and include a persistence trace across the analysis window.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="start" type="string (ISO 8601)" required>
+  Start of the analysis window.
+</ParamField>
+
+<ParamField query="end" type="string (ISO 8601)" required>
+  End of the analysis window.
+</ParamField>
+
+<ParamField query="scale" type="string">
+  Restrict to a single scale level: `fine`, `mid`, or `broad`.
+</ParamField>
+
+<ParamField query="resolution" type="string">
+  Temporal resolution for the persistence trace. Accepted values: `minute`, `hour`, `day`. Default: `hour`.
+</ParamField>
+
+### Example request
+
+```bash
+curl "https://api.coherencesystems.net/v1/signals/sig_01abc/persistence?start=2025-01-14T00:00:00Z&end=2025-01-15T00:00:00Z&resolution=hour" \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "signal_set_id": "sig_01abc",
+  "window": {
+    "start": "2025-01-14T00:00:00Z",
+    "end": "2025-01-15T00:00:00Z"
+  },
+  "persistence_scores": {
+    "fine": 0.87,
+    "mid": 0.74,
+    "broad": 0.91
+  },
+  "trace": [
+    { "timestamp": "2025-01-14T00:00:00Z", "fine": 0.89, "mid": 0.78, "broad": 0.92 },
+    { "timestamp": "2025-01-14T01:00:00Z", "fine": 0.88, "mid": 0.75, "broad": 0.91 },
+    { "timestamp": "2025-01-14T06:00:00Z", "fine": 0.61, "mid": 0.42, "broad": 0.88 }
+  ],
+  "persistence_breaks": [
+    {
+      "scale": "mid",
+      "timestamp": "2025-01-14T06:00:00Z",
+      "score_before": 0.75,
+      "score_after": 0.42
+    }
+  ],
+  "summary": "Structure persisted strongly at fine and broad scales. A mid-scale persistence break occurred at the start of the maintenance window.",
+  "computed_at": "2025-01-15T12:06:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Invalid `resolution` value or missing time range parameters |
+| `404` | Signal set not found |
+| `422` | Insufficient observations in the requested window for persistence analysis |
+
+---
+
+## GET /signals/{id}/transitions
+
+Retrieve detected transition windows for a signal set. Transitions mark periods where the state field moved between basins — possible phase changes, regime shifts, or reorganizations that may require deeper review.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the signal set.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="start" type="string (ISO 8601)" required>
+  Start of the detection window.
+</ParamField>
+
+<ParamField query="end" type="string (ISO 8601)" required>
+  End of the detection window.
+</ParamField>
+
+<ParamField query="confidence_min" type="number">
+  Minimum confidence score (0.0–1.0) for returned transitions. Default: `0.5`.
+</ParamField>
+
+<ParamField query="include_candidate" type="boolean">
+  If `true`, include lower-confidence candidate transitions alongside confirmed detections. Default: `false`.
+</ParamField>
+
+### Example request
+
+```bash
+curl "https://api.coherencesystems.net/v1/signals/sig_01abc/transitions?start=2025-01-14T00:00:00Z&end=2025-01-15T00:00:00Z&confidence_min=0.6" \
+  -H "Authorization: Bearer $ATLAS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "signal_set_id": "sig_01abc",
+  "window": {
+    "start": "2025-01-14T00:00:00Z",
+    "end": "2025-01-15T00:00:00Z"
+  },
+  "transitions": [
+    {
+      "id": "trn_77xyz",
+      "type": "confirmed",
+      "onset": "2025-01-14T06:15:00Z",
+      "end": "2025-01-14T07:02:00Z",
+      "confidence": 0.82,
+      "scales_involved": ["fine", "mid"],
+      "basin_shift": {
+        "from": "baseline_operating",
+        "to": "elevated_thermal"
+      },
+      "notes": "Transition coincides with scheduled maintenance window start."
+    }
+  ],
+  "transition_count": 1,
+  "computed_at": "2025-01-15T12:07:00Z"
+}
+```
+
+### Error codes
+
+| Code | Meaning |
+|---|---|
+| `400` | Invalid `confidence_min` value or missing time range |
+| `404` | Signal set not found |
+| `422` | Analysis window is too short for transition detection |

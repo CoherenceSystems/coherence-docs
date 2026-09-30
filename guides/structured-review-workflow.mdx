@@ -1,0 +1,266 @@
+---
+title: "Structured Review Workflows in Coherence Atlas"
+sidebarTitle: "Review Workflow"
+description: "Set up and run structured review workflows that keep changing conditions, interpretation limits, and findings visible together throughout the full review lifecycle."
+---
+
+A structured review in Coherence Atlas is one where the review question, documented assumptions, visible interpretation limits, and auditable artifact records stay present alongside the evidence — not as an afterthought, but as part of the record itself. This discipline matters most in complex, evolving systems where the temptation to overstate findings is highest. This guide covers how to set up a structured review session, work through the review lifecycle, document findings within defensible claim boundaries, and share the completed record with stakeholders.
+
+<Note>
+  Keeping interpretation limits visible alongside findings is not a presentation choice — it is a structural requirement of a sound review. Coherence Atlas artifact records are designed to hold both the finding and its limits in the same record so that neither can be detached from the other when the record is shared downstream.
+</Note>
+
+## What Makes a Review "Structured"
+
+Not every analysis session is a structured review. A review becomes structured in Coherence Atlas when it meets four conditions:
+
+<CardGroup cols={2}>
+  <Card title="Explicit Review Question" icon="circle-question">
+    A single, written question that the review is designed to address. If you cannot write it in one sentence, the scope needs narrowing before you begin.
+  </Card>
+  <Card title="Documented Assumptions" icon="file-lines">
+    The conditions under which the review question is being asked — signal environment, time window, system context — recorded before interpretation begins.
+  </Card>
+  <Card title="Visible Interpretation Limits" icon="eye">
+    An explicit record of what the evidence does not support, kept in the same artifact as the findings, not in a separate caveat section that can be omitted.
+  </Card>
+  <Card title="Auditable Artifact Records" icon="shield-check">
+    A persistent, shareable record that captures the full chain from context definition through finding — traceable by anyone who receives the record.
+  </Card>
+</CardGroup>
+
+## The Review Lifecycle
+
+Every structured review in Coherence Atlas moves through five stages. The stages are designed to keep context and limits visible at each transition.
+
+<Steps>
+
+  ### Plan
+
+  Define the review question and document the context before touching any signal data. At this stage you are establishing scope, not analyzing anything yet.
+
+  Capture:
+  - The review question in one sentence
+  - The signal set and time window in scope
+  - Known conditions that may affect interpretation (recent system changes, known data quality issues, prior reviews covering adjacent periods)
+  - Who is conducting the review and for what purpose (internal quality review, partner evaluation, research benchmark)
+
+  Create a review session to hold this context:
+
+  ```http
+  POST https://api.coherencesystems.net/v1/reviews
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "review_question": "Did operational coherence in production line 3 degrade during the October reconfiguration window?",
+    "context": {
+      "domain": "manufacturing operations",
+      "signal_environment": "multi-sensor continuous monitoring, 14 signals",
+      "time_window": {
+        "start": "2024-10-01T00:00:00Z",
+        "end":   "2024-10-31T23:59:59Z"
+      },
+      "known_conditions": [
+        "Line 3 underwent scheduled reconfiguration 14–16 October",
+        "Sensor B7 was offline 8–9 October — data gap present"
+      ]
+    },
+    "purpose": "enterprise operational review",
+    "reviewer": "ops-team@example.com"
+  }
+  ```
+
+  ```json
+  {
+    "review_id": "rev_0e4a9b53",
+    "status": "planned",
+    "created_at": "2024-11-01T09:00:00Z"
+  }
+  ```
+
+  ### Observe
+
+  Register your signals and run the initial persistence scan. At this stage you are gathering observations — not yet drawing conclusions. Record what you see, including anomalies, data gaps, and scale-level patterns, as observations rather than findings.
+
+  See [Running a Complete Signal Review Session](/guides/signal-review) for the full signal registration and persistence scan workflow. Attach your `signal_set_id` and `scan_id` to the review session:
+
+  ```http
+  PATCH https://api.coherencesystems.net/v1/reviews/rev_0e4a9b53
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "signal_set_id": "sset_7c2d1f08",
+    "observations": [
+      {
+        "type": "data_gap",
+        "signal_id": "sig_B7",
+        "window": { "start": "2024-10-08T00:00:00Z", "end": "2024-10-09T23:59:59Z" },
+        "note": "B7 offline. Gap noted in record. Persistence scan excludes B7 for this window."
+      },
+      {
+        "type": "persistence_drop",
+        "scan_id": "pscan_3d8c0e91",
+        "window": { "start": "2024-10-12T00:00:00Z", "end": "2024-10-20T23:59:59Z" },
+        "note": "Persistence below threshold across reconfiguration window and 4 days following."
+      }
+    ]
+  }
+  ```
+
+  ### Analyze
+
+  Run drift and transition analysis scoped to the windows identified during observation. Cross-scale structure review and state field geometry are the primary analysis tools at this stage.
+
+  Document analysis results as they come in — do not wait until the end to write them up. Record the analysis configuration (sensitivity settings, reference windows, scale levels) alongside each result so the artifact record is reproducible.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/signals/sset_7c2d1f08/drift
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "focus_window": {
+      "start": "2024-10-12T00:00:00Z",
+      "end":   "2024-10-20T23:59:59Z"
+    },
+    "scale_levels": ["fine", "mid", "broad"],
+    "reference_window": {
+      "start": "2024-10-01T00:00:00Z",
+      "end":   "2024-10-11T23:59:59Z"
+    },
+    "exclude_signals": ["sig_B7"]
+  }
+  ```
+
+  Note the `exclude_signals` field: because B7 has a known data gap in part of the reference window, excluding it keeps the analysis clean and prevents the gap from generating spurious drift signals. Document this exclusion decision in the artifact record.
+
+  ### Document
+
+  Create the artifact record. At this stage you are translating observations and analysis results into findings, and for each finding you are explicitly recording the claim and its limits.
+
+  ```http
+  POST https://api.coherencesystems.net/v1/artifacts
+  Authorization: Bearer <your_token>
+  Content-Type: application/json
+  ```
+
+  ```json
+  {
+    "review_id": "rev_0e4a9b53",
+    "signal_set_id": "sset_7c2d1f08",
+    "review_question": "Did operational coherence in production line 3 degrade during the October reconfiguration window?",
+    "assumptions": [
+      "B7 data gap (8–9 Oct) handled by signal exclusion during reference window comparison.",
+      "Reconfiguration dates (14–16 Oct) treated as a known condition, not a confound to be explained away."
+    ],
+    "findings": [
+      {
+        "label": "Persistence below threshold during and after reconfiguration",
+        "evidence": ["pscan_3d8c0e91"],
+        "claim": "Structural persistence in the 13-signal set dropped below threshold from 12 Oct through 20 Oct.",
+        "limit": "Whether this represents degradation or expected reconfiguration disruption is not determinable from persistence data alone."
+      },
+      {
+        "label": "Mid-scale drift detected across reconfiguration window",
+        "evidence": ["drift_2a0f9c44"],
+        "claim": "Mid-scale drift is present between 12–20 Oct relative to the 1–11 Oct reference window.",
+        "limit": "Fine and broad scales show no significant drift. Drift magnitude is within the range documented for planned reconfigurations on line 1 and line 2 in prior reviews."
+      }
+    ],
+    "interpretation_limits": [
+      "This review covers only the October window. Whether coherence recovered to baseline after 20 Oct is outside scope.",
+      "Causal attribution — whether reconfiguration caused the drift — is not supported by this evidence set.",
+      "B7 exclusion means findings apply to the 13-signal subset, not the full 14-signal environment."
+    ],
+    "reviewer": "ops-team@example.com"
+  }
+  ```
+
+  ### Share
+
+  Share the completed artifact record with stakeholders. The share URL returns the full record — review question, context, assumptions, findings, claim limits, and analysis provenance — in a single view.
+
+  ```http
+  GET https://api.coherencesystems.net/v1/artifacts/art_5b7e2d30
+  Authorization: Bearer <your_token>
+  ```
+
+  ```json
+  {
+    "artifact_id": "art_5b7e2d30",
+    "share_url": "https://atlas.coherencesystems.net/artifacts/art_5b7e2d30",
+    "export_formats": ["json", "pdf"],
+    "status": "final"
+  }
+  ```
+
+  When sharing with stakeholders who do not have Coherence Atlas access, use the PDF export. It preserves the full record structure including interpretation limits — nothing is stripped in export.
+
+</Steps>
+
+## Using Artifact Records to Document Without Overstating
+
+The artifact record structure enforces a specific discipline: every finding has a corresponding `limit` field that lives at the same level as the claim. This is not optional formatting — it is how Coherence Atlas prevents finding statements from circulating detached from their evidentiary limits.
+
+When writing findings, apply this test to each one:
+
+1. **What specifically did the data show?** (The claim — be precise, not general)
+2. **What did the data not show?** (The limit — be equally precise)
+3. **What analysis produced this finding?** (The evidence — reference the scan or analysis ID)
+4. **What would need to be true for this claim to be wrong?** (A useful stress test before finalizing)
+
+If you cannot answer all four, the finding is not ready to document.
+
+## Claim Boundaries
+
+A claim boundary defines the perimeter of what a review's evidence supports. In Coherence Atlas, claim boundaries are recorded at two levels:
+
+<Tabs>
+  <Tab title="Finding-level boundaries">
+    Each individual finding carries its own claim and limit. Finding-level boundaries are recorded in the `findings` array of the artifact record — they travel with the finding whenever the record is shared or exported.
+
+    ```json
+    {
+      "label": "Mid-scale drift during reconfiguration",
+      "claim": "Mid-scale drift is detectable relative to the pre-reconfiguration reference window.",
+      "limit": "This finding does not establish whether the drift magnitude was operationally significant or within expected reconfiguration variance."
+    }
+    ```
+  </Tab>
+  <Tab title="Review-level boundaries">
+    The review as a whole has interpretation limits that apply across all findings — typically scope limits (time window, signal set, excluded signals) and method limits (what the analysis can and cannot distinguish). These are recorded in the `interpretation_limits` array.
+
+    ```json
+    "interpretation_limits": [
+      "All findings are scoped to the October window. No inference about prior or subsequent periods is supported.",
+      "Causal attribution is outside the scope of this method."
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+## Example: Enterprise Operational Review
+
+An enterprise team monitoring a multi-site production environment runs a monthly structured review to check for drift and degradation. Their workflow looks like this:
+
+<Accordion title="Monthly operational review template">
+
+  **Plan:** Review question is set at the start of each month — typically "Did any monitored system cross a drift or degradation threshold during the prior month?" Context includes the previous month's artifact record as a reference baseline.
+
+  **Observe:** All site signal sets are ingested and persistence scans run in parallel at the start of each review cycle. Sites with low-persistence windows are flagged for deeper analysis.
+
+  **Analyze:** Flagged sites receive drift and transition analysis. Sites with no low-persistence windows are documented as "no significant events detected" — this is itself a finding with its own claim limits (e.g., "absence of detection does not confirm absence of change at scales below detection threshold").
+
+  **Document:** Artifact records are created for each site reviewed. A summary artifact links to site-level records and records review-level claim limits.
+
+  **Share:** Summary artifact is shared with operational leadership via the share URL. Site-level records are retained in the monitoring record for audit purposes.
+
+</Accordion>
