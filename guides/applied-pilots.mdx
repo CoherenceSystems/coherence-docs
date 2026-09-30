@@ -1,194 +1,32 @@
 ---
-title: "How Coherence Atlas Applied Pilot Evaluations Work"
-sidebarTitle: "Applied Pilots"
-description: "How Coherence Atlas applied pilots work: scoped evaluations, defined criteria, confidentiality terms, structured findings, and documented claim boundaries."
+title: "Explore a potential fit"
+sidebarTitle: "Explore a potential fit"
+description: "A few questions to help frame a useful first conversation."
+noindex: true
 ---
 
-An applied pilot is a scoped evaluation of Coherence Atlas methods in a real domain context. It is not a proof-of-concept demo or an open-ended exploration — it is a structured engagement with explicit criteria, appropriate confidentiality protections, and disciplined claim boundaries. The goal of a pilot is to evaluate whether Coherence Atlas methods are a good fit for a specific problem, using real or realistic signal environments, and to document what the evaluation actually shows. This guide covers how pilots work, how to prepare for one, and how to start a conversation about engaging.
+You do not need a complete proposal to start a conversation. A clear question and a little context are a useful beginning.
 
-<Note>
-  Pilot configurations and data remain within the agreed scope for the duration and aftermath of the engagement. Coherence Systems does not use pilot data for product development or external reporting without explicit agreement. Confidentiality terms are established at the start of every pilot engagement.
-</Note>
+The [public website](https://coherencesystems.net) describes interest in research conversations, technical diligence, and exploratory applied pilots where the fit is appropriate.
 
-## What an Applied Pilot Is
+## What would you like to understand?
 
-<CardGroup cols={2}>
-  <Card title="Scoped" icon="bullseye" href="/guides/structured-review-workflow">
-    A pilot addresses a specific review question in a defined domain. Scope is agreed before the engagement begins — expanding scope mid-pilot requires explicit agreement from both sides.
-  </Card>
-  <Card title="Criteria-driven" icon="list-check" href="/guides/structured-review-workflow">
-    Evaluation criteria are defined before analysis begins. A pilot produces a documented evaluation against those criteria, not an open-ended report of observations.
-  </Card>
-  <Card title="Confidential" icon="lock" href="/guides/structured-review-workflow">
-    Signal data, system configurations, and findings remain within the agreed scope. Pilots are conducted under confidentiality terms agreed at engagement start.
-  </Card>
-  <Card title="Claim-bounded" icon="shield-halved" href="/guides/structured-review-workflow">
-    Findings from a pilot are documented with explicit claim boundaries. A pilot result is evidence about method performance in a specific context — not a general endorsement or certification.
-  </Card>
-</CardGroup>
+Consider sharing:
 
-## Criteria for a Good Pilot Fit
+- The kind of system or workflow you are studying
+- The change you are trying to understand
+- Why the question matters to your team
+- What a useful evaluation would need to establish
+- Any timing or practical constraints you want to discuss
 
-Not every system or use case is a good fit for a Coherence Atlas applied pilot. Strong candidates share most of these characteristics:
+For example: “We are trying to understand whether changing conditions in our system warrant closer review. We would like to discuss how to frame an evaluation.”
 
-<Accordion title="Multi-signal complexity">
-  The system of interest generates multiple concurrent signals — sensors, metrics, logs, model outputs, or instrumentation streams — that are expected to carry relational structure across time. Single-signal or purely univariate monitoring problems are generally not well suited to Coherence Atlas methods.
-</Accordion>
+## What should we clarify together?
 
-<Accordion title="Genuine drift or transition concerns">
-  There is a real, documented concern about whether system behavior is gradually changing, degrading, or reorganizing — not a hypothetical interest in what drift detection might reveal. The review question should be grounded in an operational or research concern that matters to someone.
-</Accordion>
+A first discussion can explore the question, comparison conditions, evidence needed, and limits on interpretation. Any proposed evaluation would need its own agreed scope.
 
-<Accordion title="Need for interpretable evidence">
-  The value being sought is not just a detection output — it is evidence that can be examined, documented, and communicated to stakeholders with explicit confidence limits. If the requirement is a simple threshold alarm, Coherence Atlas is probably not the right tool.
-</Accordion>
+Specific deliverables, access, schedules, and commercial terms are not offered by this guide. Bring those questions to the conversation.
 
-<Accordion title="Appropriate signal access">
-  The partner organization can provide access to a signal set representative of the domain of interest — either real operational data (with appropriate data handling arrangements) or high-quality synthetic data generated to match the real environment. Pilots cannot be meaningfully scoped without access to realistic signals.
-</Accordion>
+## Ready to ask?
 
-<Accordion title="Willingness to define evaluation criteria in advance">
-  A pilot that will only define success after seeing results is not structured. Strong pilot candidates are willing to agree on evaluation criteria — what a useful finding looks like, what would count as a non-result — before analysis begins.
-</Accordion>
-
-## How to Prepare for a Pilot
-
-Preparation work before the engagement begins determines the quality of the evaluation. Come to the initial conversation with as much of the following as you can.
-
-<Steps>
-
-  ### Define the Domain and Review Question
-
-  Write the review question in one sentence. If you cannot do this yet, that is useful information — the first conversation with Coherence Systems will help sharpen it. But the more specific your starting question, the faster the pilot scoping process moves.
-
-  Examples of well-formed review questions:
-  - "Is structural coherence in our sensor network degrading between scheduled maintenance cycles?"
-  - "Did the model ensemble we deployed in Q3 show drift relative to the Q2 baseline, and at what scale?"
-  - "Can we detect the transition point between stable and unstable operating regimes in our simulation output?"
-
-  ### Define the Signal Environment
-
-  Describe the signals you intend to bring into the pilot:
-  - How many signals are in scope
-  - What types of signals they are (continuous sensor streams, discrete events, model outputs, etc.)
-  - The time range you want to evaluate
-  - Any known data quality issues, gaps, or anomalies in the record
-  - Whether you are using real data, synthetic data, or a combination
-
-  You do not need to share the actual data to begin scoping — a description is sufficient for the initial conversation.
-
-  ### Describe the Evaluation Criteria
-
-  What would a useful result look like for your organization? What would a non-result look like? Consider:
-  - Is the goal to detect a specific known event (e.g., a maintenance cycle, a deployment, a reconfiguration)?
-  - Is the goal to characterize ongoing drift between two time points?
-  - Is the goal to evaluate whether a detection method is reliable enough to support an operational decision?
-
-  Evaluation criteria do not need to be fully specified before the first conversation, but having a working draft helps both sides move quickly.
-
-  ### Understand Confidentiality Requirements
-
-  Come prepared to describe any data handling or confidentiality requirements that apply to your domain — regulatory, contractual, or internal policy. Coherence Systems will work with you to define terms that meet your requirements before any data is shared.
-
-</Steps>
-
-## What Coherence Systems Provides During a Pilot
-
-During an applied pilot engagement, Coherence Systems provides:
-
-<CardGroup cols={2}>
-  <Card title="Method Support" icon="wrench" href="/api/signals">
-    Guidance on configuring Coherence Atlas methods — persistence scan parameters, drift sensitivity settings, transition detection thresholds — for your specific signal environment.
-  </Card>
-  <Card title="Benchmark Design Assistance" icon="flask" href="/guides/benchmark-design">
-    Help designing benchmark scenarios to validate method choices before applying them to your real data, so evaluation criteria are grounded in demonstrated method performance.
-  </Card>
-  <Card title="Structured Review Access" icon="magnifying-glass-chart" href="/guides/structured-review-workflow">
-    Full access to Coherence Atlas review infrastructure — signal ingestion, registered views, artifact records, and export — for the duration of the pilot.
-  </Card>
-  <Card title="Findings Review" icon="comments" href="/api/reviews">
-    A structured review of pilot findings with Coherence Systems staff, including discussion of claim boundaries, interpretation limits, and what the results do and do not support.
-  </Card>
-</CardGroup>
-
-## The Pilot Workflow
-
-<Steps>
-
-  ### Scope
-
-  Agree on the review question, signal environment, evaluation criteria, time window, and confidentiality terms. Document the agreed scope in writing before proceeding.
-
-  A scope document should cover:
-  - The review question
-  - The signal set (description, not the data itself)
-  - Evaluation criteria and what constitutes a finding vs. a non-result
-  - Data handling and confidentiality terms
-  - Timeline and checkpoints
-
-  ### Configure
-
-  Ingest the pilot signal set and configure Coherence Atlas for the domain. This typically includes:
-  - Signal registration and context definition
-  - Benchmark design and validation (for novel method configurations)
-  - Baseline persistence scan to establish the reference state
-
-  Coherence Systems staff are available throughout this stage to assist with configuration decisions.
-
-  ### Evaluate
-
-  Run the full analysis — persistence, drift, transition — against the pilot signal set. All analysis configurations are documented as they run so the evaluation is reproducible.
-
-  Findings are recorded in artifact records as they develop, including the analysis configuration that produced them, the evidence base, and preliminary claim boundaries.
-
-  ### Document
-
-  Finalize artifact records for the pilot. Each finding includes:
-  - The specific claim the evidence supports
-  - The explicit limit on that claim
-  - The analysis configuration and scan IDs that produced the evidence
-  - Any conditions or exclusions that affected the analysis
-
-  The pilot documentation package includes all artifact records plus a summary record linking them and recording the overall evaluation result against the agreed criteria.
-
-  ### Review Findings
-
-  Conduct a structured review of findings with Coherence Systems staff. This session is an opportunity to:
-  - Walk through each finding and its claim boundaries
-  - Discuss what the results do and do not support
-  - Identify any follow-on questions the evaluation raises
-  - Agree on how the documentation package will be used and by whom
-
-  The findings review session itself is documented — its conclusions become part of the pilot record.
-
-</Steps>
-
-## How to Start
-
-To begin a conversation about an applied pilot, contact Coherence Systems at [**hbengtson@coherencesystems.net**](mailto:hbengtson@coherencesystems.net) or through the [contact form](https://coherencesystems.net/contact).
-
-In your inquiry, include:
-
-- A one-sentence description of the review question or domain problem you are trying to address
-- A brief description of the signal environment (number and type of signals, approximate time range)
-- Your organization's primary goal for the evaluation (detection validation, operational review, research evaluation, other)
-- Any known confidentiality or data handling requirements
-
-You do not need a finalized scope to make first contact. The initial conversation is designed to determine whether there is a good fit and, if so, to develop the scope collaboratively.
-
-<CardGroup cols={2}>
-  <Card
-    title="Signal Review"
-    icon="chart-mixed"
-    href="/guides/signal-review"
-  >
-    Walk through the full signal review session workflow — from context definition and signal registration to artifact record creation and export.
-  </Card>
-  <Card
-    title="Structured Review Workflow"
-    icon="sitemap"
-    href="/guides/structured-review-workflow"
-  >
-    Learn how structured review sessions keep changing conditions, interpretation limits, and findings visible together throughout the review lifecycle.
-  </Card>
-</CardGroup>
+[Contact Coherence Systems](/quickstart) with a brief, non-confidential description.

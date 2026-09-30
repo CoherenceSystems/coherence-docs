@@ -1,209 +1,34 @@
 ---
-title: "Get Started with the Coherence Atlas API in Minutes"
-sidebarTitle: "Quick Start"
-description: "Register a signal set, run a drift check, and create an artifact record using the Coherence Atlas REST API — from zero to a working review session."
+title: "Start a conversation"
+sidebarTitle: "Contact"
+description: "How to ask a question or discuss a possible collaboration with Coherence Systems."
+noindex: true
 ---
 
-This guide walks you through your first end-to-end workflow with the Coherence Atlas API. By the end, you will have authenticated successfully, registered a signal set, retrieved a drift assessment, and created an artifact record you can reference in future reviews. Each step builds on the last, so work through them in order.
-
-## Prerequisites
-
-Before you begin, make sure you have the following:
-
-- **API access** — A Coherence Atlas account with an active API key. If you do not have one, request access through the Coherence Systems Labs onboarding process.
-- **Signal environment understanding** — A working sense of what signals you want to register: their identifiers, units, sample rates, and the scale levels (fine, mid, broad) that are meaningful for your domain.
-- **HTTP client** — `curl`, Postman, or any HTTP client capable of sending JSON payloads with custom headers.
-
----
-
-<Steps>
-
-  <Step title="Get Your API Key">
-    Sign in to the Coherence Atlas dashboard and navigate to **Settings → API Keys**. Create a new key and copy it immediately — it will not be shown again.
-
-    Store your key in an environment variable so you do not hard-code it into requests:
-
-    ```bash
-    export COHERENCE_API_KEY="your-api-key-here"
-    ```
-
-    All requests to the Coherence Atlas API must include this key as a Bearer token in the `Authorization` header.
-  </Step>
-
-  <Step title="Authenticate and Verify Access">
-    Confirm that your key is valid and your account is active by calling the identity endpoint. A successful response returns your account profile and the API version your key is scoped to.
-
-    **Request**
-
-    ```bash
-    curl -X GET https://api.coherencesystems.net/v1/me \
-      -H "Authorization: Bearer $COHERENCE_API_KEY"
-    ```
-
-    **Response**
-
-    ```json
-    {
-      "account_id": "acct_7f3a92bc",
-      "organization": "Acme Research Lab",
-      "role": "analyst",
-      "api_version": "v1",
-      "status": "active"
-    }
-    ```
-
-    If you receive a `401 Unauthorized`, double-check that your key was copied without trailing whitespace and that the environment variable is exported in your current shell session.
-
-    <Warning>
-      Never include your raw API key in source code, notebooks, or documentation you share with others. Always use environment variables or a secrets manager.
-    </Warning>
-  </Step>
-
-  <Step title="Register a Signal Set">
-    A signal set is the foundational unit in Coherence Atlas. It groups related signals under a shared domain and scale configuration so the platform can align them into a registered view.
-
-    Send a `POST` request to `/signals` with a JSON body describing your signal set. The example below registers a two-sensor temperature array from an engineered system, configured across all three scale levels.
-
-    **Request**
-
-    ```bash
-    curl -X POST https://api.coherencesystems.net/v1/signals \
-      -H "Authorization: Bearer $COHERENCE_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "name": "reactor-temperature-array",
-        "domain": "engineered_systems",
-        "scale_levels": ["fine", "mid", "broad"],
-        "signals": [
-          { "id": "temp_01", "unit": "celsius", "sample_rate_hz": 10 },
-          { "id": "temp_02", "unit": "celsius", "sample_rate_hz": 10 }
-        ]
-      }'
-    ```
-
-    **Response**
-
-    ```json
-    {
-      "signal_set_id": "sset_c84e1a77",
-      "name": "reactor-temperature-array",
-      "domain": "engineered_systems",
-      "scale_levels": ["fine", "mid", "broad"],
-      "signal_count": 2,
-      "status": "registered",
-      "created_at": "2025-01-14T09:22:11Z"
-    }
-    ```
-
-    Save the `signal_set_id` — you will use it in the next two steps.
-
-    <Tip>
-      Choose `scale_levels` deliberately. If your domain only has meaningful structure at broad scales (e.g., daily operational cycles), including `"fine"` will add computation without insight. Start with all three and narrow down based on your first persistence review.
-    </Tip>
-  </Step>
-
-  <Step title="Run a Drift Check">
-    With your signal set registered, you can now request a drift assessment. Drift review examines gradual movement, divergence, and degradation relative to the registered baseline for your signal set.
-
-    **Request**
-
-    ```bash
-    curl -X GET "https://api.coherencesystems.net/v1/signals/sset_c84e1a77/drift" \
-      -H "Authorization: Bearer $COHERENCE_API_KEY"
-    ```
-
-    **Response**
-
-    ```json
-    {
-      "signal_set_id": "sset_c84e1a77",
-      "drift_assessment": {
-        "overall_status": "moderate_drift_detected",
-        "reviewed_at": "2025-01-14T09:45:00Z",
-        "scale_results": {
-          "fine": {
-            "status": "stable",
-            "drift_index": 0.12
-          },
-          "mid": {
-            "status": "moderate_drift",
-            "drift_index": 0.54,
-            "note": "Divergence between temp_01 and temp_02 increasing over the last 6 hours."
-          },
-          "broad": {
-            "status": "stable",
-            "drift_index": 0.19
-          }
-        },
-        "persistence_flag": true,
-        "transition_candidate": false
-      }
-    }
-    ```
-
-    The `drift_index` is a normalized score from `0.0` (no drift) to `1.0` (maximum detected drift). A `persistence_flag` of `true` means the mid-scale divergence has carried forward across multiple review windows — it is not a momentary irregularity. A `transition_candidate` of `true` would indicate the system is approaching a potential regime shift and warrants a deeper review session.
-  </Step>
-
-  <Step title="Create an Artifact Record">
-    Artifact records are auditable entries in your monitoring record. Create one to log the current state of your drift assessment — capturing context, signals reviewed, and the outcome — so it can be referenced in future sessions or shared with your team.
-
-    **Request**
-
-    ```bash
-    curl -X POST https://api.coherencesystems.net/v1/artifacts \
-      -H "Authorization: Bearer $COHERENCE_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "signal_set_id": "sset_c84e1a77",
-        "artifact_type": "drift_review",
-        "context": {
-          "review_question": "Is mid-scale divergence between temp_01 and temp_02 persistent?",
-          "conditions": "Normal operating load, no scheduled maintenance window."
-        },
-        "linked_assessment": {
-          "drift_index_mid": 0.54,
-          "persistence_flag": true,
-          "transition_candidate": false
-        },
-        "notes": "Divergence first appeared at 03:15 UTC. Escalating to engineering review."
-      }'
-    ```
-
-    **Response**
-
-    ```json
-    {
-      "artifact_id": "art_9b2f51de",
-      "signal_set_id": "sset_c84e1a77",
-      "artifact_type": "drift_review",
-      "created_at": "2025-01-14T09:52:33Z",
-      "status": "recorded",
-      "monitoring_record_url": "https://api.coherencesystems.net/v1/artifacts/art_9b2f51de"
-    }
-    ```
-
-    Your artifact is now part of the monitoring record for this signal set. Retrieve it at any time using the `artifact_id`, or list all artifacts for a signal set with `GET /artifacts?signal_set_id=sset_c84e1a77`.
-  </Step>
-
-</Steps>
-
----
-
-## What You Just Did
-
-You authenticated with the API, registered a two-signal set across three scale levels, retrieved a structured drift assessment that distinguished scale-specific behavior, and committed that assessment to an auditable artifact record. That is the core loop of a Coherence Atlas review workflow.
-
-<Tip>
-  Ready to go deeper? The full API reference covers every endpoint, parameter, and response schema in the `/signals`, `/artifacts`, `/reviews`, and `/graph` resource groups — including how to open a structured review session and query the knowledge graph directly.
-</Tip>
-
-## Next Steps
+Have a question about the website or a possible collaboration? Send a short note with what you would like to understand.
 
 <CardGroup cols={2}>
-  <Card title="Core Concepts" icon="book-open" href="/core-concepts">
-    Understand the registered view, knowledge graph, state field geometry, and persistence before you design your first real workflow.
+  <Card title="Send an inquiry" icon="message" href="https://coherencesystems.net/contact">
+    Use the public contact form.
   </Card>
-  <Card title="API Reference" icon="code" href="/api/overview">
-    Full schema documentation for every endpoint, including the `/reviews` and `/graph` resource groups not covered in this guide.
+  <Card title="Email Hunter" icon="envelope" href="mailto:hbengtson@coherencesystems.net">
+    Reach Hunter Bengtson directly.
   </Card>
 </CardGroup>
+
+## What to include
+
+- Your question
+- Your organization or area of work, if relevant
+- A short, non-confidential description of the context
+- What you would like to discuss next
+
+For a website question, include the page and the wording you would like clarified.
+
+## Keep your first message high-level
+
+Do not send confidential, proprietary, regulated, patient, medical, or other sensitive information through the public form. A submission does not create an NDA or a client relationship.
+
+If a confidential discussion is needed, arrange a separate written agreement first. Read the [Legal Notice](https://coherencesystems.net/legal) and [Privacy Policy](https://coherencesystems.net/privacy).
+
+Looking for an answer first? [Browse common questions](/reference/faq).

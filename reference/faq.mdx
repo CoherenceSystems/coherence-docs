@@ -1,216 +1,57 @@
 ---
-title: "Coherence Atlas: Frequently Asked Questions and Answers"
-sidebarTitle: "FAQ"
-description: "Answers to common questions about Coherence Atlas — getting started, working with signals, interpreting results, and understanding the knowledge graph."
+title: "Common questions"
+sidebarTitle: "Common questions"
+description: "Short answers about Coherence Atlas, its current stage, and what to do next."
+noindex: true
 ---
 
-If you are evaluating Coherence Atlas, setting up your first review session, or trying to interpret an analysis result, the questions below cover the most common points of confusion. Answers are grouped by topic — jump to the section that matches where you are in the workflow.
+## What is Coherence Atlas?
 
-## Getting Started
+Coherence Atlas is Coherence Systems' developing product for investigating how complex systems change: what continues to hold, what shifts, and what may be reorganizing.
 
-<AccordionGroup>
-  <Accordion title="What is Coherence Atlas and who is it for?">
-    Coherence Atlas is a technical platform for examining how complex, evolving systems retain, lose, and reorganize structure over time. It tracks three simultaneous views of change — observed motion, cross-scale structure, and state field geometry — and gives you structured tooling for studying persistence, drift, degradation, and transitions.
+## What do persistence, drift, degradation, and transition mean?
 
-    The platform is designed for three audiences:
+These terms help frame different questions about change:
 
-    - **Researchers** working on method development, simulations, or benchmark design who need a rigorous, auditable environment for studying structural change.
-    - **Enterprise teams** conducting operational drift review and looking for a systematic way to surface gradual degradation before it becomes a failure.
-    - **Partners** running scoped technical evaluations where explicit claim boundaries and diligence workflows are required.
+- **Persistence:** The pattern or function you care about continues across the period and conditions being examined. Individual readings can vary while something important still holds.
+- **Drift:** A gradual change relative to a stated point of comparison.
+- **Degradation:** A worsening of the performance or capacity that matters for the question. Changing readings alone do not establish degradation.
+- **Transition:** A shift in how a system behaves or is organized. Understanding the shift requires context and evidence.
 
-    If you work with signal-rich systems and need to go beyond dashboards and alerts to understand *how* structure is changing, Coherence Atlas is designed for you.
-  </Accordion>
+For a hypothetical example, imagine airflow readings in a building gradually changing. Occupancy, sensor placement, and equipment condition could each help explain the change. The readings raise a drift question; deciding whether performance has worsened requires more evidence.
 
-  <Accordion title="How do I get access to Coherence Atlas?">
-    Coherence Atlas is currently in active R&D and is being refined through synthetic studies, benchmark design, and applied pilot evaluations. Access is available through direct engagement with the Coherence Systems team.
+## What does “time, scale, and state” mean?
 
-    To request access, reach out via the contact information on the Coherence Systems Labs website or email the team directly. Partner evaluations and research collaborations are scoped individually — the team will work with you to identify the right access path based on your use case.
-  </Accordion>
+- **Time:** How observations and behavior change over a period.
+- **Scale:** The level of detail used to examine the system, such as a short interval versus a longer pattern, or a component versus the wider system.
+- **State:** The system's condition or configuration in the description being used.
 
-  <Accordion title="What do I need before I start using the API?">
-    Before making your first API call, you need:
+These views help frame comparisons. The useful choices depend on the system and the question.
 
-    1. **A Bearer token** — issued during account provisioning. Pass it in the `Authorization: Bearer <token>` header on every request.
-    2. **At least one signal set** — create one via `POST /signals/sets` with a name, domain, and one or more scale levels.
-    3. **At least one registered signal** — add individual signals to your set via `POST /signals`.
-    4. **A review question** — a plain-language statement of what you are investigating. This is required when you open a review session and is embedded in every artifact record you produce.
+## What is a structured review?
 
-    If you are testing with synthetic data before connecting live signals, you can use a benchmark scenario (`POST /reviews/benchmarks`) to generate parameterized test data without standing up real instrumentation.
-  </Accordion>
+Start with a clear question, identify what was observed and under which conditions, choose a relevant comparison, and explain what the evidence supports. Keep open questions visible so the next step can address them.
 
-  <Accordion title="Is there a free tier or trial period?">
-    Coherence Atlas does not currently offer a self-serve free tier. Because the platform is in active R&D and access is invitation-based, trial and pilot access is arranged directly with the Coherence Systems team. Reach out to discuss evaluation terms appropriate for your organization or research context.
-  </Accordion>
-</AccordionGroup>
+For a potential evaluation, this means agreeing on what you want to learn and what would count as useful evidence. [Explore a potential fit](/guides/applied-pilots).
 
----
+## Who is this work for?
 
-## Working with Signals
+Researchers, technical teams reviewing operational change, and potential partners exploring scoped evaluations. You can start with a question about your system or workflow.
 
-<AccordionGroup>
-  <Accordion title="What types of signals can I register?">
-    Coherence Atlas is designed for any time-series signal from a complex system — it is not limited to a specific domain or modality. Common examples include:
+## Can I start using Coherence Atlas today?
 
-    - **Engineered and operational systems** — sensor readings, process variables, equipment telemetry, network metrics
-    - **Research instrumentation** — laboratory measurements, simulation outputs, synthetic benchmarks
-    - **Structured review workflows** — any time-ordered record that can be expressed as a numeric or categorical time series
+Coherence Atlas is in research and development. [Contact us](/quickstart) to discuss current availability and whether there is a useful next step for your team.
 
-    Each signal must have a declared `unit` and `sample_rate_hz`. Beyond that, Coherence Atlas does not constrain signal type — the `tags` field lets you label and group signals for cross-scale queries.
-  </Accordion>
+## Who should I contact?
 
-  <Accordion title="What does 'registering' a signal mean?">
-    Registering a signal means creating a formal record of it in the Coherence Atlas knowledge graph via the `/signals` API endpoint. Registration stores the signal's metadata — name, unit, sample rate, tags, and parent signal set — and creates a signal node in the graph that Coherence Atlas uses to track relationships, align views, and link findings in artifact records.
+Hunter Bengtson, CEO and technical founder, is the direct contact. You can [send an inquiry](https://coherencesystems.net/contact) or [email Hunter](mailto:hbengtson@coherencesystems.net).
 
-    Registration is separate from data ingestion. You register a signal once to establish its identity and structure; you then stream or upload time-series data to that registered signal as your monitoring period progresses. This separation allows Coherence Atlas to reason about signal relationships even before data arrives.
-  </Accordion>
+## Can I send confidential information?
 
-  <Accordion title="How many signals can I register in a signal set?">
-    There is no hard platform limit on the number of signals per signal set during the current R&D phase. In practice, signal sets used in active pilot evaluations range from a handful of channels to several dozen. If you anticipate registering more than 100 signals in a single set, contact the Coherence Systems team to discuss capacity and performance expectations for your use case.
-  </Accordion>
+Keep the first inquiry high-level. The public contact form is not a confidential channel. A confidential discussion requires a separate written agreement first. See the [Legal Notice](https://coherencesystems.net/legal).
 
-  <Accordion title="What scale levels are available (fine, mid, broad)?">
-    Coherence Atlas supports three scale levels — `fine`, `mid`, and `broad` — which correspond to short, medium, and long temporal or structural windows in which patterns are analyzed.
+## Where can I learn more?
 
-    - **Fine** — captures rapid, local-scale variation; sensitive to transient events and high-frequency structure.
-    - **Mid** — captures intermediate patterns that span multiple fine-scale windows; good for drift detection.
-    - **Broad** — captures the longest-range structural trends; used to identify regime-scale reorganization.
+Visit the [main website](https://coherencesystems.net) for the public overview and the [About page](https://coherencesystems.net/about) for the team. Public notices are available in the [Legal Notice](https://coherencesystems.net/legal).
 
-    You declare which scale levels to activate when you create a signal set. All active levels are maintained in alignment throughout analysis and displayed together in the registered view. Using all three levels is recommended when you are uncertain whether the structural changes you care about are fine, mid, or broad in character.
-  </Accordion>
-
-  <Accordion title="Can I use synthetic data for testing?">
-    Yes. Benchmark scenarios (`POST /reviews/benchmarks`) are designed precisely for this purpose. You specify a scenario type (`drift`, `degradation`, or `transition`), set parameters such as drift rate, noise level, and onset position, and Coherence Atlas generates a parameterized synthetic signal environment for you to analyze.
-
-    Synthetic testing lets you calibrate detection sensitivity, validate that your review workflow is set up correctly, and build intuition for how persistence scores and transition windows behave — before connecting live instrumentation.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Analysis & Results
-
-<AccordionGroup>
-  <Accordion title="What is the difference between drift and transition?">
-    Drift and transition both describe change, but they differ in character, rate, and what they imply for your system.
-
-    **Drift** is gradual and continuous — a slow movement, divergence, or degradation that accumulates across many windows in the registered progression. Drift does not imply a qualitative change in how the system is organized; it is a shift in degree, not kind. Coherence Atlas tracks drift by comparing successive windows against the baseline established in your review context.
-
-    **Transition** is a possible phase change or regime shift — a qualitative reorganization where the system may have crossed from one state basin to another. Transitions are flagged as candidate windows in the registered progression, not automatically confirmed, because evidence of a rapid structural change does not always mean a true basin crossing occurred. You use the Transition tooling and claim boundaries to determine whether the evidence supports that stronger conclusion.
-
-    In practice, drift and transition often appear together: prolonged drift can push a system toward a transition threshold, and a transition can reset the baseline from which subsequent drift is measured.
-  </Accordion>
-
-  <Accordion title="How should I interpret a persistence score?">
-    A persistence score (0–1) measures whether meaningful structure appears to carry forward across consecutive windows in the registered progression, rather than appearing only momentarily regular. A score near 1 means the structural pattern is durable and consistent across the analysis window. A score near 0 means the pattern is transient — it may appear in a single window but does not persist into adjacent ones.
-
-    A few interpretive guidelines:
-
-    - **Score ≥ 0.8** — High persistence. The structure is robust and unlikely to be noise.
-    - **Score 0.5–0.8** — Moderate persistence. Structure is present but not fully stable; worth examining whether drift or an approaching transition is eroding it.
-    - **Score < 0.5** — Low persistence. The signal environment is not producing durable structure in this window, or the system is in a transitional state.
-
-    Persistence scores are always scale-specific. A signal can have high fine-scale persistence and low broad-scale persistence simultaneously — which is informative in itself.
-  </Accordion>
-
-  <Accordion title="What is a claim boundary and why does it matter?">
-    A claim boundary is an explicit statement of what the evidence in an artifact record supports and, equally importantly, what it does not. Every artifact record in Coherence Atlas requires at least one claim boundary.
-
-    Claim boundaries matter for three reasons:
-
-    1. **They prevent over-interpretation.** Complex system analysis is susceptible to finding patterns that seem meaningful but are within the noise for the period reviewed. A claim boundary forces you to scope your finding to what the data actually shows.
-    2. **They make limits visible.** Anyone who reads your artifact record later — a colleague, a partner, a regulator — can see exactly where the evidence runs out. This is especially important in diligence and operational review workflows.
-    3. **They support longitudinal comparison.** When you run follow-up sessions, bounded claims from earlier records give you a clear baseline to test against, rather than an ambiguous narrative.
-
-    A well-written claim boundary states both the positive finding and its scope: for example, "Drift onset at mid scale is detectable from position 38 onward during the Q1 run period. This finding does not extend to the prior operating cycle, which was not reviewed in this session."
-  </Accordion>
-
-  <Accordion title="How do artifact records work?">
-    An artifact record is the auditable output produced when you finalize a review session. It captures:
-
-    - The **review session ID** it finalizes, along with the embedded context (review question, time range, known conditions).
-    - **Findings** structured by analysis type — persistence scores, drift onset positions, and any detected transition windows with confidence levels.
-    - **Claim boundaries** explicitly bounding what the findings support.
-    - A **timestamp** and links to the knowledge graph nodes referenced during analysis.
-
-    Artifact records are immutable once created. They are stored in the Coherence Atlas knowledge graph as linked nodes, meaning you can query across records over time — for example, comparing drift findings across multiple quarterly review sessions for the same signal set.
-
-    You create an artifact record via `POST /artifacts` with a `review_session_id` and the required fields. The review session must be in `in_review` status; finalizing the artifact moves the session to `finalized`.
-  </Accordion>
-
-  <Accordion title="What is the registered view?">
-    The registered view is the multi-panel aligned display that is the primary analysis interface in Coherence Atlas. It shows three simultaneous views of your system:
-
-    1. **Observed motion** — signal movement through time.
-    2. **Cross-scale structure** — structural patterns at fine, mid, and broad scales.
-    3. **State field** — state path geometry moving between basins.
-
-    All three panels are aligned on the registered progression axis (0–100), so a feature you see at position 62 in the cross-scale structure panel is the same moment as position 62 in the state field panel. This alignment is what makes it possible to detect, for example, that a mid-scale structural shift coincides with a state trajectory excursion — a co-occurrence that would be invisible if the panels were on separate time axes.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Knowledge Graph
-
-<AccordionGroup>
-  <Accordion title="What is the knowledge graph and do I need to understand it to use the API?">
-    The knowledge graph is the structural backbone of Coherence Atlas. It encodes relationships between signals, states, system structure, and temporal context — and it is what allows the platform to track how structure evolves across time, scale, and state dimensions simultaneously.
-
-    You do not need to understand the graph internals to use the API effectively. When you register signals, open review sessions, and create artifact records, Coherence Atlas builds and updates the graph automatically. The graph is working behind every analysis you run, but you interact with it through the higher-level objects — signal sets, review sessions, artifact records — rather than managing nodes and edges directly.
-
-    If you want to query the graph directly for advanced use cases, the `/graph` endpoint exposes relationship queries.
-  </Accordion>
-
-  <Accordion title="Can I query the knowledge graph directly?">
-    Yes, via the `/graph` endpoint. The graph exposes relationship queries that let you:
-
-    - Retrieve all signal nodes connected to a given artifact record.
-    - Query state nodes associated with a specific time range or registered progression position.
-    - Traverse relationships between signals, states, and findings across multiple review sessions.
-
-    Direct graph queries are most useful for research workflows where you need to examine structural relationships across many sessions, or for building custom reporting on top of Coherence Atlas data. For standard review and diligence workflows, the higher-level `/reviews` and `/artifacts` endpoints are sufficient.
-
-    See the API reference for the `/graph` endpoint for supported query types and examples.
-  </Accordion>
-
-  <Accordion title="How does the graph relate to the signals I register?">
-    Every signal you register via `POST /signals` automatically creates a signal node in the knowledge graph and links it to the parent signal set node and the domain tag. As you run review sessions, additional edges are created connecting your signal nodes to:
-
-    - **State nodes** identified during analysis — representing the state-field regions your system occupied during the review period.
-    - **Artifact record nodes** — linking findings to the specific signals that produced them.
-    - **Context nodes** — preserving the review question and known conditions alongside every observation.
-
-    This means that after several review sessions, your graph contains a growing, queryable record of how each signal has behaved across time, what states it has been associated with, and what findings have been bounded by claim boundaries in each session. The graph is the mechanism by which Coherence Atlas supports longitudinal analysis rather than one-off reviews.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Platform & Support
-
-<AccordionGroup>
-  <Accordion title="Is my data kept confidential?">
-    Yes. Coherence Systems Labs treats all signal data, review session content, and artifact records submitted through the Coherence Atlas API as confidential. Data from one customer or partner is not shared with or accessible to another. For specific contractual data-handling terms — including retention periods, deletion rights, and applicable data processing agreements — contact the Coherence Systems team directly when setting up your access arrangement.
-  </Accordion>
-
-  <Accordion title="What is the current development status of Coherence Atlas?">
-    Coherence Atlas is in active R&D. The platform is being refined through synthetic benchmark studies, method validation, and applied pilot evaluations with research and enterprise partners. Coherence Systems Labs is a member of the NVIDIA Inception program, and the core analytical approach is patent pending.
-
-    Active R&D status means the API and data model are evolving. Breaking changes are communicated in advance to partners with active access, and the documentation is updated alongside API changes. If you are building a production integration, contact the team to discuss API stability commitments for your use case.
-  </Accordion>
-
-  <Accordion title="How do I report an issue or request a feature?">
-    If you have API access, report issues and feature requests through the channel established with your Coherence Systems contact — typically email or a shared project workspace. You can also reach the team directly at [hbengtson@coherencesystems.net](mailto:hbengtson@coherencesystems.net). When reporting an issue, include:
-
-    - The endpoint and HTTP method you were calling.
-    - The request body (redact any sensitive signal data if necessary).
-    - The full response, including status code and any error message.
-    - The approximate timestamp of the request.
-
-    For feature requests, describe the workflow you are trying to accomplish and where the current platform falls short. Specific use cases are more actionable than abstract capability requests.
-  </Accordion>
-
-  <Accordion title="How do I get in touch with the Coherence Systems team?">
-    Reach the Coherence Systems Labs team directly at [hbengtson@coherencesystems.net](mailto:hbengtson@coherencesystems.net). If you already have API access, use the direct contact channel established during your onboarding. For new inquiries — including research collaborations, partner evaluations, and enterprise pilot requests — email the team and describe your use case and organization so your inquiry can be routed appropriately.
-  </Accordion>
-</AccordionGroup>
+Still have a question? [Start a conversation](/quickstart).
