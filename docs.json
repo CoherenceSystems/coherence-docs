@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Coherence Atlas",
+  "name": "Coherence Systems",
   "theme": "luma",
   "colors": {
     "primary": "#ef7025",
@@ -14,19 +14,28 @@
   },
   "navbar": {
     "primary": {
-      "type": "github",
-      "href": "https://github.com/CoherenceSystems/coherence-alpha"
-    }
+      "type": "button",
+      "href": "https://coherencesystems.net/contact",
+      "label": "Get in touch"
+    },
+    "links": [
+      {
+        "href": "https://coherencesystems.net",
+        "label": "Main website"
+      }
+    ]
   },
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Questions & answers",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Start here",
             "pages": [
               "introduction",
+              "reference/faq",
+              "guides/applied-pilots",
               "quickstart",
               "core-concepts"
             ]
@@ -38,7 +47,8 @@
               "knowledge-graph/nodes-and-edges",
               "knowledge-graph/schema",
               "knowledge-graph/querying"
-            ]
+            ],
+            "hidden": true
           },
           {
             "group": "Core Capabilities",
@@ -47,36 +57,38 @@
               "capabilities/persistence",
               "capabilities/drift",
               "capabilities/transition"
-            ]
+            ],
+            "hidden": true
           },
           {
             "group": "Guides",
             "pages": [
               "guides/signal-review",
               "guides/benchmark-design",
-              "guides/structured-review-workflow",
-              "guides/applied-pilots"
-            ]
+              "guides/structured-review-workflow"
+            ],
+            "hidden": true
           },
           {
             "group": "Reference",
             "pages": [
               "reference/terminology",
-              "reference/data-model",
-              "reference/faq"
-            ]
+              "reference/data-model"
+            ],
+            "hidden": true
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Technical reference pending",
         "groups": [
           {
             "group": "Overview",
             "pages": [
               "api/overview",
               "api/authentication"
-            ]
+            ],
+            "hidden": true
           },
           {
             "group": "Endpoints",
@@ -84,15 +96,17 @@
               "api/signals",
               "api/artifacts",
               "api/reviews"
-            ]
+            ],
+            "hidden": true
           }
-        ]
+        ],
+        "hidden": true
       }
     ]
   },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/CoherenceSystems/coherence-alpha"
-    }
+  "description": "Questions and answers about Coherence Systems, Coherence Atlas, and starting a conversation.",
+  "banner": {
+    "content": "Draft for review · Research in progress",
+    "dismissible": false
   }
 }
