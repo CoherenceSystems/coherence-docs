@@ -1,7 +1,7 @@
 ---
-title: "Authenticating with the Coherence Atlas API"
+title: "Coherence Atlas API: Authentication and Key Management"
 sidebarTitle: "Authentication"
-description: "Learn how to obtain, pass, rotate, and scope Coherence Atlas API keys to authenticate every request securely and correctly."
+description: "Learn how to obtain, pass, rotate, and scope Coherence Atlas API keys to authenticate every request to the platform securely and correctly."
 ---
 
 Every request to the Coherence Atlas API must be authenticated with an API key. Keys are passed as Bearer tokens in the `Authorization` request header. There are no session cookies or OAuth flows — each request is independently authenticated, making the API straightforward to use from scripts, pipelines, and server-side applications.
@@ -33,7 +33,7 @@ Generate an API key from the Coherence Atlas dashboard:
 
 Include your API key as a `Bearer` token in the `Authorization` header of every request:
 
-```
+```http
 Authorization: Bearer <your-api-key>
 ```
 
@@ -51,14 +51,10 @@ All requests must also be made over **HTTPS**. HTTP requests are rejected.
 
 When generating a key, you select a scope that controls what the key can access:
 
-<CardGroup cols={2}>
-  <Card title="Read-Only" icon="eye">
-    Permits `GET` requests only. Use for dashboards, monitoring pipelines, and any context where write access is not required.
-  </Card>
-  <Card title="Read-Write" icon="pen-to-square">
-    Permits `GET`, `POST`, `PATCH`, and `DELETE` requests. Use for ingestion pipelines, review management, and artifact creation.
-  </Card>
-</CardGroup>
+| Scope | Permitted Methods | Recommended Use |
+|---|---|---|
+| **Read-Only** | `GET` | Dashboards, monitoring pipelines, and any consumer that only needs to query data |
+| **Read-Write** | `GET`, `POST`, `PATCH`, `DELETE` | Ingestion pipelines, review management, and artifact creation |
 
 <Tip>
   Follow the principle of least privilege — issue read-only keys for consumers that only need to query data, and reserve read-write keys for services that actively write to the API.

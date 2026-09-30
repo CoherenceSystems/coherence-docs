@@ -1,5 +1,5 @@
 ---
-title: "Querying the Coherence Atlas Knowledge Graph"
+title: "Querying the Coherence Atlas Knowledge Graph via REST API"
 sidebarTitle: "Querying"
 description: "Query the Coherence Atlas knowledge graph via REST API — traverse by signal, time range, scale level, or state basin using filters and pagination."
 ---
@@ -8,7 +8,7 @@ The Coherence Atlas knowledge graph is queryable directly through the REST API a
 
 ## Base Endpoint
 
-```
+```bash
 GET https://api.coherencesystems.net/v1/graph
 Authorization: Bearer <your-api-key>
 ```
@@ -69,7 +69,7 @@ Retrieve the full immediate neighborhood of a signal node — all edges and conn
 
 **Request:**
 
-```
+```bash
 GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&depth=1
 Authorization: Bearer <your-api-key>
 ```
@@ -144,7 +144,7 @@ Retrieve all `TRANSITIONS_TO` edges observed within a specific time window, to s
 
 **Request:**
 
-```
+```bash
 GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&relationship=TRANSITIONS_TO&time_range=2025-01-15T00:00:00Z,2025-01-16T00:00:00Z
 Authorization: Bearer <your-api-key>
 ```
@@ -214,7 +214,7 @@ Retrieve the cross-scale structural snapshot — all `CORRELATES_WITH` and `OBSE
 
 **Request:**
 
-```
+```bash
 GET https://api.coherencesystems.net/v1/graph?signal_id=sig_01abc&relationship=CORRELATES_WITH&time_range=2025-01-15T11:00:00Z,2025-01-15T12:00:00Z&scale_level=mid
 Authorization: Bearer <your-api-key>
 ```
@@ -345,5 +345,5 @@ When a query returns `has_more: true`, use the `page` parameter to retrieve subs
 ---
 
 <Tip>
-  When running a Drift or Transition review, use the graph query as the structural foundation for your review session. Query for `CORRELATES_WITH` edges filtered by `drift_threshold` to surface where structural correlation has degraded, then anchor your `ReviewNode` to those specific signals and time windows. This keeps your review question tightly connected to the graph evidence rather than relying on summary statistics alone. See the [Drift](/capabilities/drift) and [Transition](/capabilities/transition) capability pages for step-by-step review workflows that use graph queries at each stage.
+  When running a Drift or Transition review, use the graph query as the structural foundation for your review session. Query for `CORRELATES_WITH` edges filtered by `drift_threshold` to surface where structural correlation has degraded, then anchor your `ReviewNode` to those specific signals and time windows. This keeps your review question tightly connected to the graph evidence rather than relying on summary statistics alone. See the [Structured Review Workflow](/guides/structured-review-workflow) guide for step-by-step instructions on using graph queries at each stage of a review.
 </Tip>

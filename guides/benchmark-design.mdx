@@ -1,7 +1,7 @@
 ---
-title: "Designing Benchmarks for Drift and Transition"
+title: "Designing Drift, Degradation, and Transition Benchmarks"
 sidebarTitle: "Benchmark Design"
-description: "Learn how to build structured benchmark scenarios in Coherence Atlas to test and validate drift, degradation, and transition detection methods against known ground truth."
+description: "Build benchmark scenarios in Coherence Atlas to validate drift, degradation, and transition detection against known ground truth before using real data."
 ---
 
 Benchmarks in Coherence Atlas are structured scenarios with documented ground truth — they give you a controlled setting in which to evaluate whether a detection method is actually finding what it claims to find. Before applying any method to real operational data, a well-designed benchmark tells you where the method performs reliably, where its sensitivity boundaries lie, and what claim boundaries are defensible. This guide walks you through designing, registering, and running benchmarks for drift, degradation, and transition behavior.
@@ -24,13 +24,13 @@ Benchmarks are not general stress tests. Each benchmark is scoped to a specific 
 ## The Three Benchmark Types
 
 <CardGroup cols={3}>
-  <Card title="Drift Benchmarks" icon="chart-line">
+  <Card title="Drift Benchmarks" icon="chart-line" href="/capabilities/drift">
     Test whether your drift detection configuration correctly identifies gradual movement and divergence across scale levels. Ground truth includes the onset time, rate, and scale signature of the designed-in drift.
   </Card>
-  <Card title="Degradation Benchmarks" icon="arrow-trend-down">
+  <Card title="Degradation Benchmarks" icon="arrow-trend-down" href="/capabilities/persistence">
     Test whether structural degradation — loss of coherence over time — is detected at the right moment and at the right scale. Ground truth includes the degradation onset and the scale levels affected.
   </Card>
-  <Card title="Transition Benchmarks" icon="shuffle">
+  <Card title="Transition Benchmarks" icon="shuffle" href="/capabilities/transition">
     Test whether candidate transition windows — phase changes and regime shifts — are correctly identified within tolerable timing windows. Ground truth includes the designed transition point and the expected state-field signature.
   </Card>
 </CardGroup>

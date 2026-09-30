@@ -10,25 +10,27 @@ Coherence Atlas introduces precise language for examining how complex systems re
 
 These five terms describe the fundamental units of analysis in every Coherence Atlas review session.
 
-<Accordion title="Persistence">
-  Persistence describes whether meaningful structure appears to carry forward over time, rather than appearing only momentarily regular. A high-persistence signal or state pattern is one that holds its character across consecutive windows in the registered progression — it is not a one-time artifact. Coherence Atlas surfaces persistence scores and visualizations so you can distinguish durable structure from transient regularity before drawing conclusions.
-</Accordion>
+<AccordionGroup>
+  <Accordion title="Persistence">
+    Persistence describes whether meaningful structure appears to carry forward over time, rather than appearing only momentarily regular. A high-persistence signal or state pattern is one that holds its character across consecutive windows in the registered progression — it is not a one-time artifact. Coherence Atlas surfaces persistence scores and visualizations so you can distinguish durable structure from transient regularity before drawing conclusions.
+  </Accordion>
 
-<Accordion title="Drift">
-  Drift is the gradual movement, divergence, or degradation of a signal or state pattern — always reviewed in stated context. Unlike a sudden transition, drift accumulates slowly and may not be visible in a single time window. Coherence Atlas tracks drift by comparing successive windows against the baseline established in your review context, so that slow change does not disappear into noise.
-</Accordion>
+  <Accordion title="Drift">
+    Drift is the gradual movement, divergence, or degradation of a signal or state pattern — always reviewed in stated context. Unlike a sudden transition, drift accumulates slowly and may not be visible in a single time window. Coherence Atlas tracks drift by comparing successive windows against the baseline established in your review context, so that slow change does not disappear into noise.
+  </Accordion>
 
-<Accordion title="Degradation">
-  Degradation is the loss of structure or performance in a complex system over time. It can manifest as decreasing signal regularity, weakening cross-scale coherence, or progressive departure from a known-good state basin. Coherence Atlas treats degradation as a measurable process, not a binary failure state, so you can track its onset and rate before a system crosses a critical threshold.
-</Accordion>
+  <Accordion title="Degradation">
+    Degradation is the loss of structure or performance in a complex system over time. It can manifest as decreasing signal regularity, weakening cross-scale coherence, or progressive departure from a known-good state basin. Coherence Atlas treats degradation as a measurable process, not a binary failure state, so you can track its onset and rate before a system crosses a critical threshold.
+  </Accordion>
 
-<Accordion title="Transition">
-  A transition is a possible phase change, regime shift, or structural reorganization that deserves deeper review. Coherence Atlas flags candidate transition windows in the registered progression and gives you language and tooling to examine whether the evidence supports a genuine state-basin crossing or a temporary excursion. Transitions are always provisional until you document a claim boundary.
-</Accordion>
+  <Accordion title="Transition">
+    A transition is a possible phase change, regime shift, or structural reorganization that deserves deeper review. Coherence Atlas flags candidate transition windows in the registered progression and gives you language and tooling to examine whether the evidence supports a genuine state-basin crossing or a temporary excursion. Transitions are always provisional until you document a claim boundary.
+  </Accordion>
 
-<Accordion title="Context">
-  Context is the set of information — system identity, signals, known conditions, and review question — that is kept visible throughout an analysis session before any interpretation begins. Coherence Atlas surfaces context persistently in the UI and encodes it in every artifact record, so that findings are always traceable to the conditions under which they were made.
-</Accordion>
+  <Accordion title="Context">
+    Context is the set of information — system identity, signals, known conditions, and review question — that is kept visible throughout an analysis session before any interpretation begins. Coherence Atlas surfaces context persistently in the UI and encodes it in every artifact record, so that findings are always traceable to the conditions under which they were made.
+  </Accordion>
+</AccordionGroup>
 
 ---
 
@@ -36,29 +38,31 @@ These five terms describe the fundamental units of analysis in every Coherence A
 
 These terms describe the structural and geometric concepts that underlie Coherence Atlas analysis.
 
-<Accordion title="Signal Environment">
-  The signal environment is the dynamic, multi-signal setting in which a complex system operates and is monitored. It includes every registered signal, their interdependencies, sampling cadences, and the external conditions that affect them. Coherence Atlas treats the signal environment as a structured object — not a flat list of channels — so that cross-signal relationships are preserved during analysis.
-</Accordion>
+<AccordionGroup>
+  <Accordion title="Signal Environment">
+    The signal environment is the dynamic, multi-signal setting in which a complex system operates and is monitored. It includes every registered signal, their interdependencies, sampling cadences, and the external conditions that affect them. Coherence Atlas treats the signal environment as a structured object — not a flat list of channels — so that cross-signal relationships are preserved during analysis.
+  </Accordion>
 
-<Accordion title="Regime Shift">
-  A regime shift is a major reorganization of system behavior or state — a qualitative change, not simply the continuation of a drift trend. Where drift is gradual and continuous, a regime shift involves crossing a boundary into a meaningfully different mode of operation. Coherence Atlas provides dedicated Transition tooling to help you detect, describe, and document candidate regime shifts before committing to a causal claim.
-</Accordion>
+  <Accordion title="Regime Shift">
+    A regime shift is a major reorganization of system behavior or state — a qualitative change, not simply the continuation of a drift trend. Where drift is gradual and continuous, a regime shift involves crossing a boundary into a meaningfully different mode of operation. Coherence Atlas provides dedicated Transition tooling to help you detect, describe, and document candidate regime shifts before committing to a causal claim.
+  </Accordion>
 
-<Accordion title="State Field">
-  The state field is the geometric space describing all possible states a system can occupy, given its signals and structural constraints. Coherence Atlas represents this space abstractly so that system trajectories — sequences of states over time — can be compared, clustered, and related to known basins. You do not need to specify the state field manually; it is inferred from registered signals and the knowledge graph.
-</Accordion>
+  <Accordion title="State Field">
+    The state field is the geometric space describing all possible states a system can occupy, given its signals and structural constraints. Coherence Atlas represents this space abstractly so that system trajectories — sequences of states over time — can be compared, clustered, and related to known basins. You do not need to specify the state field manually; it is inferred from registered signals and the knowledge graph.
+  </Accordion>
 
-<Accordion title="State Basin">
-  A state basin is a region of the state field where a system tends to dwell under a given operating regime. Systems in a stable basin return to it after small perturbations; transitions move the system from one basin to another. Coherence Atlas visualizes basin occupancy and trajectory in the state field panel of the registered view, helping you see when a system is leaving its typical region before a full transition is confirmed.
-</Accordion>
+  <Accordion title="State Basin">
+    A state basin is a region of the state field where a system tends to dwell under a given operating regime. Systems in a stable basin return to it after small perturbations; transitions move the system from one basin to another. Coherence Atlas visualizes basin occupancy and trajectory in the state field panel of the registered view, helping you see when a system is leaving its typical region before a full transition is confirmed.
+  </Accordion>
 
-<Accordion title="Cross-Scale Structure">
-  Cross-scale structure refers to structural patterns observed simultaneously at fine, mid, and broad scales. Coherence Atlas registers scale levels at ingestion and maintains them as separate but aligned views throughout analysis. Examining all three scales together helps you distinguish local noise from mid-scale drift and mid-scale drift from broad structural reorganization — a distinction that single-scale analysis routinely misses.
-</Accordion>
+  <Accordion title="Cross-Scale Structure">
+    Cross-scale structure refers to structural patterns observed simultaneously at fine, mid, and broad scales. Coherence Atlas registers scale levels at ingestion and maintains them as separate but aligned views throughout analysis. Examining all three scales together helps you distinguish local noise from mid-scale drift and mid-scale drift from broad structural reorganization — a distinction that single-scale analysis routinely misses.
+  </Accordion>
 
-<Accordion title="Registered Progression">
-  Registered progression is the normalized time or state axis — running from 0 to 100 — used to align the multi-view panels in a Coherence Atlas session. By mapping raw timestamps to a common axis, registered progression allows you to compare observations made at different sampling rates, overlay multiple signal sets, and locate transition windows at consistent positions regardless of clock time. All artifact records reference positions on this axis.
-</Accordion>
+  <Accordion title="Registered Progression">
+    Registered progression is the normalized time or state axis — running from 0 to 100 — used to align the multi-view panels in a Coherence Atlas session. By mapping raw timestamps to a common axis, registered progression allows you to compare observations made at different sampling rates, overlay multiple signal sets, and locate transition windows at consistent positions regardless of clock time. All artifact records reference positions on this axis.
+  </Accordion>
+</AccordionGroup>
 
 ---
 
@@ -66,21 +70,23 @@ These terms describe the structural and geometric concepts that underlie Coheren
 
 These terms describe the graph-based structural backbone that powers Coherence Atlas querying and relationship tracking.
 
-<Accordion title="Knowledge Graph">
-  The knowledge graph is the structural backbone of Coherence Atlas. It encodes relationships between signals, states, system structure, and temporal context so that queries can span time, scale, and state dimensions simultaneously. You interact with the graph indirectly through every analysis session — it is what allows Coherence Atlas to surface cross-signal relationships and trace how structure evolves — and directly through the `/graph` API endpoint for advanced querying.
-</Accordion>
+<AccordionGroup>
+  <Accordion title="Knowledge Graph">
+    The knowledge graph is the structural backbone of Coherence Atlas. It encodes relationships between signals, states, system structure, and temporal context so that queries can span time, scale, and state dimensions simultaneously. You interact with the graph indirectly through every analysis session — it is what allows Coherence Atlas to surface cross-signal relationships and trace how structure evolves — and directly through the `/graph` API endpoint for advanced querying.
+  </Accordion>
 
-<Accordion title="Signal Node">
-  A signal node is a graph node representing a registered signal or signal set within the knowledge graph. It carries metadata — unit, sample rate, scale level, domain tags — and is connected to state nodes, artifact records, and other signal nodes via typed graph edges. When you register a signal through the `/signals` endpoint, Coherence Atlas automatically creates and links a signal node on your behalf.
-</Accordion>
+  <Accordion title="Signal Node">
+    A signal node is a graph node representing a registered signal or signal set within the knowledge graph. It carries metadata — unit, sample rate, scale level, domain tags — and is connected to state nodes, artifact records, and other signal nodes via typed graph edges. When you register a signal through the `/signals` endpoint, Coherence Atlas automatically creates and links a signal node on your behalf.
+  </Accordion>
 
-<Accordion title="State Node">
-  A state node is a graph node representing a point or region in the state field. State nodes are created when Coherence Atlas identifies a distinct state during analysis and connects them to signal nodes that characterize that state. They are the anchor points for basin geometry and transition detection, and they accumulate evidence from successive review sessions over time.
-</Accordion>
+  <Accordion title="State Node">
+    A state node is a graph node representing a point or region in the state field. State nodes are created when Coherence Atlas identifies a distinct state during analysis and connects them to signal nodes that characterize that state. They are the anchor points for basin geometry and transition detection, and they accumulate evidence from successive review sessions over time.
+  </Accordion>
 
-<Accordion title="Artifact Record">
-  An artifact record is an auditable monitoring record that documents the findings from a completed review session. Each record is linked to the knowledge graph via the signal nodes, state nodes, and context object it references, making it queryable across sessions. Artifact records include findings, claim boundaries, and a pointer to the registered progression positions reviewed — forming a durable, traceable record of what was observed and what was concluded.
-</Accordion>
+  <Accordion title="Artifact Record">
+    An artifact record is an auditable monitoring record that documents the findings from a completed review session. Each record is linked to the knowledge graph via the signal nodes, state nodes, and context object it references, making it queryable across sessions. Artifact records include findings, claim boundaries, and a pointer to the registered progression positions reviewed — forming a durable, traceable record of what was observed and what was concluded.
+  </Accordion>
+</AccordionGroup>
 
 ---
 
@@ -88,22 +94,24 @@ These terms describe the graph-based structural backbone that powers Coherence A
 
 These terms describe the analytical constructs and output types produced during a Coherence Atlas review session.
 
-<Accordion title="Monitoring Record">
-  A monitoring record is a time-ordered record of system observations linked to the knowledge graph. It differs from raw logs in that it carries structural context — which signals were active, at what scale levels, under what known conditions — so that observations made at different times remain comparable. Monitoring records are the primary input to artifact records and the foundation of longitudinal analysis.
-</Accordion>
+<AccordionGroup>
+  <Accordion title="Monitoring Record">
+    A monitoring record is a time-ordered record of system observations linked to the knowledge graph. It differs from raw logs in that it carries structural context — which signals were active, at what scale levels, under what known conditions — so that observations made at different times remain comparable. Monitoring records are the primary input to artifact records and the foundation of longitudinal analysis.
+  </Accordion>
 
-<Accordion title="Registered View">
-  The registered view is the multi-panel aligned display that shows observed motion, cross-scale structure, and state field simultaneously, all positioned on the registered progression axis. It is the primary analysis interface in Coherence Atlas. Aligning all three views on a common axis lets you see, for example, whether a cross-scale pattern shift at mid-progression coincides with a state trajectory excursion — something that separate plots would obscure.
-</Accordion>
+  <Accordion title="Registered View">
+    The registered view is the multi-panel aligned display that shows observed motion, cross-scale structure, and state field simultaneously, all positioned on the registered progression axis. It is the primary analysis interface in Coherence Atlas. Aligning all three views on a common axis lets you see, for example, whether a cross-scale pattern shift at mid-progression coincides with a state trajectory excursion — something that separate plots would obscure.
+  </Accordion>
 
-<Accordion title="Transition Window">
-  A transition window is the detected interval in registered progression where Coherence Atlas identifies a candidate transition — a possible regime shift or state-basin crossing. The window has a start and end position on the 0–100 axis, a confidence indicator, and links to the specific signal and state evidence that triggered detection. Transition windows are flagged for your review; they do not automatically constitute confirmed transitions until you document a claim boundary.
-</Accordion>
+  <Accordion title="Transition Window">
+    A transition window is the detected interval in registered progression where Coherence Atlas identifies a candidate transition — a possible regime shift or state-basin crossing. The window has a start and end position on the 0–100 axis, a confidence indicator, and links to the specific signal and state evidence that triggered detection. Transition windows are flagged for your review; they do not automatically constitute confirmed transitions until you document a claim boundary.
+  </Accordion>
 
-<Accordion title="Claim Boundary">
-  A claim boundary is an explicit statement of what the available evidence supports and, equally importantly, what it does not support. Every artifact record in Coherence Atlas requires one or more claim boundaries, ensuring that findings are scoped to the data actually reviewed. Claim boundaries prevent over-interpretation and make the limits of an analysis visible to anyone who later reads the artifact record.
-</Accordion>
+  <Accordion title="Claim Boundary">
+    A claim boundary is an explicit statement of what the available evidence supports and, equally importantly, what it does not support. Every artifact record in Coherence Atlas requires one or more claim boundaries, ensuring that findings are scoped to the data actually reviewed. Claim boundaries prevent over-interpretation and make the limits of an analysis visible to anyone who later reads the artifact record.
+  </Accordion>
 
-<Accordion title="Diligence">
-  Diligence, in the Coherence Atlas context, is a structured technical evaluation process with explicit criteria and visible interpretation limits. A diligence session applies systematic review steps — context setting, persistence check, drift review, transition analysis — and produces an artifact record whose findings are bounded by documented claim boundaries. Coherence Atlas is designed to support diligence workflows for partner evaluations, operational audits, and benchmark validation.
-</Accordion>
+  <Accordion title="Diligence">
+    Diligence, in the Coherence Atlas context, is a structured technical evaluation process with explicit criteria and visible interpretation limits. A diligence session applies systematic review steps — context setting, persistence check, drift review, transition analysis — and produces an artifact record whose findings are bounded by documented claim boundaries. Coherence Atlas is designed to support diligence workflows for partner evaluations, operational audits, and benchmark validation.
+  </Accordion>
+</AccordionGroup>

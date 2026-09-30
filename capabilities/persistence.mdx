@@ -1,7 +1,7 @@
 ---
 title: "Measure Whether Structure Carries Forward Over Time"
 sidebarTitle: "Persistence"
-description: "Distinguish genuine structural persistence from momentary regularity by measuring whether meaningful patterns carry forward across time, scale, and a defined context."
+description: "Measure whether structural patterns in your signal environment genuinely carry forward across time and scale, relative to your declared review context."
 ---
 
 Not every pattern you observe in a signal record is meaningful. Some regularities appear briefly and vanish — artifacts of measurement timing, transient conditions, or coincidental alignment. Persistence in Coherence Atlas answers a more demanding question: does the structure you see at one moment actually carry forward, or is it only momentarily regular? That distinction matters because methods and systems that depend on stable structure need more than a snapshot — they need evidence that the structure holds.
@@ -13,10 +13,10 @@ Persistence is the measure of whether meaningful structure in a signal environme
 ### Momentary Regularity vs. Genuine Persistence
 
 <CardGroup cols={2}>
-  <Card title="Momentary Regularity" icon="bolt">
+  <Card title="Momentary Regularity" icon="bolt" href="/reference/terminology">
     A pattern that appears in a short window and does not recur. It may pass statistical regularity tests on a snapshot but cannot be shown to carry forward to adjacent windows or to hold at multiple scales simultaneously.
   </Card>
-  <Card title="Genuine Persistence" icon="arrow-right-long">
+  <Card title="Genuine Persistence" icon="arrow-right-long" href="/reference/terminology">
     A pattern that is recoverable across successive time windows, appears consistently at at least one scale level, and holds relative to the declared operating conditions. It survives the forward-looking test.
   </Card>
 </CardGroup>
@@ -131,10 +131,10 @@ The `conditional_persistence` field shows that under high-load conditions specif
 ## Use Cases
 
 <CardGroup cols={2}>
-  <Card title="Method Validation for Researchers" icon="flask">
+  <Card title="Method Validation for Researchers" icon="flask" href="/guides/signal-review">
     Use persistence analysis to verify that the structural signatures your method depends on are genuinely stable in your benchmark or simulation data, not artifacts of a particular snapshot window.
   </Card>
-  <Card title="Stability Monitoring for Enterprise Teams" icon="shield-check">
+  <Card title="Stability Monitoring for Enterprise Teams" icon="shield-check" href="/guides/structured-review-workflow">
     Run persistence review on operational signals to confirm that system structure is holding between scheduled inspections — and to detect early-stage degradation before it becomes a performance issue.
   </Card>
 </CardGroup>

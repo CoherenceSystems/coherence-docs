@@ -1,5 +1,5 @@
 ---
-title: "Coherence Atlas API Data Model Reference"
+title: "Coherence Atlas API Data Model and Object Reference"
 sidebarTitle: "Data Model"
 description: "A complete reference for every object type you create and retrieve through the Coherence Atlas API — fields, types, nesting, and JSON examples."
 ---
@@ -9,22 +9,22 @@ The Coherence Atlas API is organized around six primary object types. Each type 
 ## Object Overview
 
 <CardGroup cols={3}>
-  <Card title="Signal Set" icon="layer-group">
+  <Card title="Signal Set" icon="layer-group" href="/api/signals">
     A named collection of related signals ingested together and analyzed at one or more scale levels.
   </Card>
-  <Card title="Signal" icon="wave-square">
+  <Card title="Signal" icon="wave-square" href="/api/signals">
     A single time-series channel belonging to a signal set, with unit and sampling metadata.
   </Card>
-  <Card title="Review Session" icon="magnifying-glass-chart">
+  <Card title="Review Session" icon="magnifying-glass-chart" href="/api/reviews">
     A scoped analysis session anchored to a context object that keeps your review question visible.
   </Card>
-  <Card title="Context Object" icon="crosshairs">
+  <Card title="Context Object" icon="crosshairs" href="/api/reviews">
     The embedded sub-object on a review session encoding the review question, time range, and conditions.
   </Card>
-  <Card title="Artifact Record" icon="file-certificate">
+  <Card title="Artifact Record" icon="file-certificate" href="/api/artifacts">
     An auditable output record produced when a review session is finalized, with findings and claim boundaries.
   </Card>
-  <Card title="Benchmark Scenario" icon="flask">
+  <Card title="Benchmark Scenario" icon="flask" href="/api/reviews">
     A synthetic or parameterized scenario used to validate analysis behavior against known ground truth.
   </Card>
 </CardGroup>

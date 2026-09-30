@@ -1,7 +1,7 @@
 ---
 title: "Coherence Atlas: Core Concepts and Key Vocabulary Explained"
 sidebarTitle: "Core Concepts"
-description: "The core ideas behind Coherence Atlas — registered views, the knowledge graph, state field geometry, persistence, drift, and transition concepts explained."
+description: "Core ideas behind Coherence Atlas — registered views, knowledge graph, state field geometry, persistence, drift, and transition concepts explained."
 ---
 
 Coherence Atlas is built on a specific vocabulary for talking about structural change in complex systems. Before you design a review workflow or interpret a drift assessment, it helps to have these concepts clear — not as abstract definitions, but as precise tools you will use repeatedly. This page walks through the full concept map, from what a registered view shows you to how artifact records build an auditable monitoring history.
@@ -11,13 +11,13 @@ Coherence Atlas is built on a specific vocabulary for talking about structural c
 Every signal set you register in Coherence Atlas produces a **registered view** — a three-panel aligned display that puts observed motion, cross-scale structure, and state field geometry side by side. The key word is *registered*: all three panels are anchored to the same temporal context and the same system configuration, so you are never comparing across mismatched baselines.
 
 <CardGroup cols={3}>
-  <Card title="Observed Motion" icon="chart-line">
+  <Card title="Observed Motion" icon="chart-line" href="/capabilities/context">
     The left panel. Raw signal trajectories through time — the most direct representation of how system behavior is evolving.
   </Card>
-  <Card title="Cross-Scale Structure" icon="layer-group">
+  <Card title="Cross-Scale Structure" icon="layer-group" href="/capabilities/persistence">
     The center panel. Structural patterns at fine, mid, and broad scales shown simultaneously, so local variation and global reorganization are visible in the same frame.
   </Card>
-  <Card title="State Field" icon="diagram-project">
+  <Card title="State Field" icon="diagram-project" href="/capabilities/drift">
     The right panel. State path geometry across basins — showing whether the system is settling, drifting, or moving toward a regime boundary.
   </Card>
 </CardGroup>
@@ -144,6 +144,21 @@ The table below maps each core concept to what it measures and its most typical 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/quickstart">
     Put these concepts into practice — register a signal set, run a drift check, and create your first artifact record.
+  </Card>
+  <Card title="Context" icon="crosshairs" href="/capabilities/context">
+    Deep dive into how Coherence Atlas anchors interpretation by keeping system context, signals, conditions, and review questions co-visible throughout analysis.
+  </Card>
+  <Card title="Persistence" icon="hourglass-half" href="/capabilities/persistence">
+    Learn how the platform distinguishes genuine structural continuity from transient patterns across temporal windows.
+  </Card>
+  <Card title="Drift" icon="arrows-left-right-to-line" href="/capabilities/drift">
+    Explore longitudinal drift review — direction, scale-specific breakdown, and how drift index scores translate into operational decisions.
+  </Card>
+  <Card title="Transition" icon="shuffle" href="/capabilities/transition">
+    Understand how Coherence Atlas surfaces transition candidates and supports regime-shift analysis before reorganization is complete.
+  </Card>
+  <Card title="Knowledge Graph" icon="diagram-project" href="/knowledge-graph/overview">
+    Learn how the knowledge graph encodes cross-scale relationships and how to query it directly for method validation and structural inspection.
   </Card>
   <Card title="API Reference" icon="code" href="/api/overview">
     Full schema documentation for the `/signals`, `/artifacts`, `/reviews`, and `/graph` endpoints.
